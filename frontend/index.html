@@ -29,6 +29,21 @@
         Service status: Operational
       </section>
 
+      <section class="quick-metrics" aria-label="Support at a glance">
+        <article>
+          <p class="metric-label">Average first response</p>
+          <p class="metric-value">Within 4 working hours</p>
+        </article>
+        <article>
+          <p class="metric-label">Most requested service</p>
+          <p class="metric-value">IT Support</p>
+        </article>
+        <article>
+          <p class="metric-label">Submission tip</p>
+          <p class="metric-value">Add location and clear issue steps</p>
+        </article>
+      </section>
+
       <nav class="tab-nav" aria-label="Primary">
         <button class="tab-btn active" data-tab="submit" id="tabSubmit" type="button">
           Submit Ticket
@@ -46,17 +61,42 @@
           </p>
         </div>
 
+        <div class="helper-card" aria-label="Issue templates">
+          <p class="helper-title">Quick templates</p>
+          <div class="template-row">
+            <button class="chip" type="button" data-template="wifi">Wi-Fi issue</button>
+            <button class="chip" type="button" data-template="aircond">Aircond issue</button>
+            <button class="chip" type="button" data-template="portal">Portal login issue</button>
+          </div>
+        </div>
+
         <form id="ticketForm" novalidate>
           <div class="form-grid">
             <label class="field">
               <span>Full Name <strong>*</strong></span>
-              <input id="name" name="name" type="text" maxlength="80" required />
+              <input
+                id="name"
+                name="name"
+                type="text"
+                maxlength="80"
+                required
+                placeholder="Example: Nur Aisyah Binti Rahman"
+              />
+              <small class="helper">Use your full name as in student/staff record.</small>
               <small class="error" id="nameError"></small>
             </label>
 
             <label class="field">
               <span>Email <strong>*</strong></span>
-              <input id="email" name="email" type="email" maxlength="120" required />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                maxlength="120"
+                required
+                placeholder="Example: ali@student.edu.my"
+              />
+              <small class="helper">Use an active email to receive status updates.</small>
               <small class="error" id="emailError"></small>
             </label>
 
@@ -81,17 +121,32 @@
                 <option>High</option>
                 <option>Urgent</option>
               </select>
+              <small class="helper">Pick urgent only if campus operations are blocked.</small>
             </label>
 
             <label class="field field-wide">
               <span>Subject <strong>*</strong></span>
-              <input id="subject" name="subject" type="text" maxlength="120" required />
+              <input
+                id="subject"
+                name="subject"
+                type="text"
+                maxlength="120"
+                required
+                placeholder="Example: Unable to connect to campus Wi-Fi at Library Level 2"
+              />
+              <small class="helper">Keep it short and specific so support can triage quickly.</small>
               <small class="error" id="subjectError"></small>
             </label>
 
             <label class="field field-wide">
               <span>Location</span>
-              <input id="location" name="location" type="text" maxlength="120" />
+              <input
+                id="location"
+                name="location"
+                type="text"
+                maxlength="120"
+                placeholder="Example: Block C, Room 2-14 / Library Level 2"
+              />
             </label>
 
             <label class="field field-wide">
@@ -102,6 +157,7 @@
                 rows="6"
                 maxlength="2000"
                 required
+                placeholder="Describe what happened, when it started, what you already tried, and any error message shown."
               ></textarea>
               <small class="helper"><span id="descCount">0</span>/2000 characters</small>
               <small class="error" id="descriptionError"></small>
@@ -126,11 +182,29 @@
         <form id="trackForm" class="track-form" novalidate>
           <label class="field">
             <span>Email <strong>*</strong></span>
-            <input id="trackEmail" name="trackEmail" type="email" maxlength="120" required />
+            <input
+              id="trackEmail"
+              name="trackEmail"
+              type="email"
+              maxlength="120"
+              required
+              placeholder="Enter the same email used during ticket submission"
+            />
             <small class="error" id="trackEmailError"></small>
           </label>
           <button type="submit" id="trackBtn">Find Tickets</button>
         </form>
+
+        <div class="track-toolbar">
+          <label for="statusFilter">Filter by status</label>
+          <select id="statusFilter" name="statusFilter">
+            <option value="All">All</option>
+            <option value="New">New</option>
+            <option value="InProgress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
 
         <div class="tickets" id="ticketsResult" aria-live="polite"></div>
       </section>

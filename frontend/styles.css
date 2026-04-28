@@ -1,5 +1,5 @@
 :root {
-  --bg: #f6f8fb;
+  --bg: #f4f7fc;
   --panel: #ffffff;
   --text: #1e2832;
   --muted: #5d6a78;
@@ -19,7 +19,7 @@ body {
   margin: 0;
   font-family: "Source Sans 3", sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top right, #e9f2ff, transparent 45%),
+  background: radial-gradient(circle at top right, #ddecff, transparent 42%),
     var(--bg);
 }
 
@@ -80,6 +80,31 @@ body {
   margin-bottom: 1rem;
 }
 
+.quick-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.quick-metrics article {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 0.75rem;
+}
+
+.metric-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric-value {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
 .tab-nav {
   display: inline-flex;
   gap: 0.4rem;
@@ -125,6 +150,39 @@ body {
 .panel-head p {
   margin: 0.45rem 0 1rem;
   color: var(--muted);
+}
+
+.helper-card {
+  border: 1px solid #cee0f6;
+  background: #f6faff;
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.helper-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.template-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.chip {
+  border-radius: 999px;
+  border: 1px solid #b6d1f3;
+  background: #fff;
+  color: #1d4f8f;
+  padding: 0.32rem 0.68rem;
+  font-weight: 600;
+}
+
+.chip:hover {
+  background: #e8f2ff;
 }
 
 .form-grid {
@@ -245,6 +303,18 @@ button.ghost {
   align-items: end;
 }
 
+.track-toolbar {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  color: var(--muted);
+}
+
+.track-toolbar select {
+  max-width: 220px;
+}
+
 .tickets {
   margin-top: 1rem;
   display: grid;
@@ -256,6 +326,10 @@ button.ghost {
   border-radius: 0.75rem;
   background: #fbfdff;
   padding: 0.75rem;
+}
+
+.ticket-card p {
+  margin: 0.35rem 0;
 }
 
 .ticket-top {
@@ -301,11 +375,20 @@ button.ghost {
 }
 
 @media (max-width: 760px) {
+  .quick-metrics {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
 
   .track-form {
     grid-template-columns: 1fr;
+  }
+
+  .track-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

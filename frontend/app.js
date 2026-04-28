@@ -9,6 +9,8 @@ const ticketsResult = document.getElementById("ticketsResult");
 const desc = document.getElementById("description");
 const descCount = document.getElementById("descCount");
 const tabButtons = document.querySelectorAll(".tab-btn");
+const templateButtons = document.querySelectorAll(".chip[data-template]");
+const statusFilter = document.getElementById("statusFilter");
 const panels = {
   submit: document.getElementById("submitPanel"),
   track: document.getElementById("trackPanel"),
@@ -19,6 +21,7 @@ const safeTextRegex = /^[^<>]*$/;
 const allowedStatuses = ["New", "InProgress", "Resolved", "Closed"];
 
 const mockTickets = [];
+let lastLoadedTickets = [];
 
 function sanitize(value) {
   return String(value || "").trim();
@@ -57,6 +60,11 @@ function statusBadgeClass(status) {
 
 function mapSafeStatus(status) {
   return allowedStatuses.includes(status) ? status : "New";
+}
+
+function prettyStatus(status) {
+  if (status === "InProgress") return "In Progress";
+  return status;
 }
 
 function validateTicketPayload(payload) {
@@ -163,14 +171,25 @@ function renderTickets(items) {
     card.innerHTML = `
       <div class="ticket-top">
         <p class="ticket-id">${t.ticket_id || "N/A"}</p>
-        <span class="badge ${statusBadgeClass(status)}">${status}</span>
+        <span class="badge ${statusBadgeClass(status)}">${prettyStatus(status)}</span>
       </div>
       <p><strong>${t.subject || "No subject"}</strong></p>
       <p>Category: ${t.category || "General Inquiry"}</p>
+      <p>Priority: ${t.priority || "Medium"}</p>
+      <p>Location: ${t.location || "Not provided"}</p>
       <p>Updated: ${new Date(t.updated_at || t.submitted_at || Date.now()).toLocaleString()}</p>
     `;
     ticketsResult.appendChild(card);
   });
+}
+
+function applyStatusFilter() {
+  const selected = statusFilter?.value || "All";
+  if (selected === "All") {
+    renderTickets(lastLoadedTickets);
+    return;
+  }
+  renderTickets(lastLoadedTickets.filter((ticket) => mapSafeStatus(ticket.status) === selected));
 }
 
 form.addEventListener("submit", async (event) => {
@@ -232,8 +251,10 @@ trackForm.addEventListener("submit", async (event) => {
   trackBtn.textContent = "Searching...";
   try {
     const data = await getTicketsByEmail(email);
-    renderTickets(Array.isArray(data.tickets) ? data.tickets : []);
+    lastLoadedTickets = Array.isArray(data.tickets) ? data.tickets : [];
+    applyStatusFilter();
   } catch (error) {
+    lastLoadedTickets = [];
     ticketsResult.innerHTML = `<div class="ticket-card">${error.message}</div>`;
   } finally {
     trackBtn.disabled = false;
@@ -244,6 +265,44 @@ trackForm.addEventListener("submit", async (event) => {
 desc.addEventListener("input", () => {
   descCount.textContent = String(desc.value.length);
 });
+
+const templateMap = {
+  wifi: {
+    category: "IT Support",
+    subject: "Unable to connect to campus Wi-Fi",
+    description:
+      "I cannot connect to campus Wi-Fi. Device: [phone/laptop], Location: [building/room], Time started: [time], Error shown: [message].",
+  },
+  aircond: {
+    category: "Facilities",
+    subject: "Air conditioner not working",
+    description:
+      "Air conditioner appears faulty. Location: [building/room], When observed: [time], Current condition: [not cooling/leaking/no power].",
+  },
+  portal: {
+    category: "Academic Admin",
+    subject: "Student portal login issue",
+    description:
+      "Unable to access student portal. Account type: [student/staff], Time started: [time], Error message: [message], Steps already tried: [details].",
+  },
+};
+
+templateButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const key = button.dataset.template;
+    const tpl = templateMap[key];
+    if (!tpl) return;
+    form.category.value = tpl.category;
+    form.subject.value = tpl.subject;
+    form.description.value = tpl.description;
+    descCount.textContent = String(form.description.value.length);
+    hideSubmitResult();
+  });
+});
+
+if (statusFilter) {
+  statusFilter.addEventListener("change", applyStatusFilter);
+}
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
