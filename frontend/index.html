@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickAid - Smart Campus Helpdesk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="app-header">
+      <div class="brand">
+        <p class="brand-kicker">Campus Support Portal</p>
+        <h1>QuickAid</h1>
+      </div>
+      <p class="header-copy">
+        Submit issues, track request progress, and receive timely campus support.
+      </p>
+    </header>
+
+    <main id="main-content" class="container">
+      <section class="status-banner" id="statusBanner" role="status" aria-live="polite">
+        Service status: Operational
+      </section>
+
+      <nav class="tab-nav" aria-label="Primary">
+        <button class="tab-btn active" data-tab="submit" id="tabSubmit" type="button">
+          Submit Ticket
+        </button>
+        <button class="tab-btn" data-tab="track" id="tabTrack" type="button">
+          Track Tickets
+        </button>
+      </nav>
+
+      <section class="panel active" id="submitPanel" aria-labelledby="tabSubmit">
+        <div class="panel-head">
+          <h2>Report a Campus Issue</h2>
+          <p>
+            Fill in the details below. You will receive a ticket ID after submission.
+          </p>
+        </div>
+
+        <form id="ticketForm" novalidate>
+          <div class="form-grid">
+            <label class="field">
+              <span>Full Name <strong>*</strong></span>
+              <input id="name" name="name" type="text" maxlength="80" required />
+              <small class="error" id="nameError"></small>
+            </label>
+
+            <label class="field">
+              <span>Email <strong>*</strong></span>
+              <input id="email" name="email" type="email" maxlength="120" required />
+              <small class="error" id="emailError"></small>
+            </label>
+
+            <label class="field">
+              <span>Category <strong>*</strong></span>
+              <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option>IT Support</option>
+                <option>Facilities</option>
+                <option>Academic Admin</option>
+                <option>Security</option>
+                <option>General Inquiry</option>
+              </select>
+              <small class="error" id="categoryError"></small>
+            </label>
+
+            <label class="field">
+              <span>Priority</span>
+              <select id="priority" name="priority">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+                <option>Urgent</option>
+              </select>
+            </label>
+
+            <label class="field field-wide">
+              <span>Subject <strong>*</strong></span>
+              <input id="subject" name="subject" type="text" maxlength="120" required />
+              <small class="error" id="subjectError"></small>
+            </label>
+
+            <label class="field field-wide">
+              <span>Location</span>
+              <input id="location" name="location" type="text" maxlength="120" />
+            </label>
+
+            <label class="field field-wide">
+              <span>Description <strong>*</strong></span>
+              <textarea
+                id="description"
+                name="description"
+                rows="6"
+                maxlength="2000"
+                required
+              ></textarea>
+              <small class="helper"><span id="descCount">0</span>/2000 characters</small>
+              <small class="error" id="descriptionError"></small>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="submitBtn">Submit Ticket</button>
+            <button type="reset" class="ghost">Reset</button>
+          </div>
+        </form>
+
+        <div class="result hidden" id="submitResult" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" id="trackPanel" aria-labelledby="tabTrack">
+        <div class="panel-head">
+          <h2>Track Ticket Status</h2>
+          <p>Search your requests by email and review current statuses.</p>
+        </div>
+
+        <form id="trackForm" class="track-form" novalidate>
+          <label class="field">
+            <span>Email <strong>*</strong></span>
+            <input id="trackEmail" name="trackEmail" type="email" maxlength="120" required />
+            <small class="error" id="trackEmailError"></small>
+          </label>
+          <button type="submit" id="trackBtn">Find Tickets</button>
+        </form>
+
+        <div class="tickets" id="ticketsResult" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>QuickAid Smart Campus Helpdesk</p>
+      <p>Frontend Phase 2-3</p>
+    </footer>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>

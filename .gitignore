@@ -1,0 +1,7 @@
+﻿.cursor/
+.agents/
+.agent-tools/
+node_modules/
+.env
+.env.*
+*.log
