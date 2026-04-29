@@ -2077,6 +2077,55 @@ body[data-role="staff"] {
   overflow-wrap: anywhere;
 }
 
+/* Activity Log layout (matches provided screenshot) */
+.timeline-list.activity-log {
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+
+.timeline-list.activity-log li {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.timeline-list.activity-log .activity-item {
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 0.7rem;
+  position: relative;
+}
+
+.timeline-list.activity-log .activity-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 18px;
+  bottom: -14px;
+  width: 2px;
+  background: #d8e2ef;
+}
+
+.timeline-list.activity-log .timeline-dot {
+  width: 12px;
+  height: 12px;
+  margin-top: 0.28rem;
+  border: 0;
+  background: #2f73ea;
+}
+
+.timeline-list.activity-log .activity-item:nth-child(even) .timeline-dot {
+  background: #9333ea;
+}
+
+.timeline-list.activity-log .timeline-body strong {
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+
+.timeline-list.activity-log .timeline-body .muted {
+  margin-top: 0.22rem;
+}
+
 .comment-compose textarea {
   width: 100%;
 }

@@ -140,12 +140,13 @@ function renderTicket(ticket) {
   } else {
     timelineItems.forEach((entry) => {
       const li = document.createElement("li");
-      li.className = "timeline-item";
+      li.className = "timeline-item activity-item";
+      const actor = entry.by || entry.actor || (String(entry.label || "").toLowerCase().includes("created") ? (ticket.name || "Requester") : "System");
       li.innerHTML = `
         <div class="timeline-dot"></div>
         <div class="timeline-body">
           <strong>${entry.label || "Event"}</strong>
-          <div class="muted">${formatDateTime(entry.at)}</div>
+          <div class="muted">${actor} • ${formatDateTime(entry.at)}</div>
         </div>
       `;
       timeline.appendChild(li);
