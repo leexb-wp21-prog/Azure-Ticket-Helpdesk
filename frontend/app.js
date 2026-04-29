@@ -55,6 +55,17 @@ const timelineList = document.getElementById("timelineList");
 const commentsList = document.getElementById("commentsList");
 const commentText = document.getElementById("commentText");
 const btnAddComment = document.getElementById("btnAddComment");
+const ticketInlinePanel = document.getElementById("ticketInlinePanel");
+const ticketInlineEmpty = document.getElementById("ticketInlineEmpty");
+const ticketInlineContent = document.getElementById("ticketInlineContent");
+const inlineDetailSubject = document.getElementById("inlineDetailSubject");
+const inlineDetailTicketId = document.getElementById("inlineDetailTicketId");
+const inlineDetailStatus = document.getElementById("inlineDetailStatus");
+const inlineDetailPriority = document.getElementById("inlineDetailPriority");
+const inlineDetailCategory = document.getElementById("inlineDetailCategory");
+const inlineDetailLocation = document.getElementById("inlineDetailLocation");
+const inlineDetailUpdated = document.getElementById("inlineDetailUpdated");
+const inlineDetailDescription = document.getElementById("inlineDetailDescription");
 
 const profileModal = document.getElementById("profileModal");
 const profileForm = document.getElementById("profileForm");
@@ -577,6 +588,35 @@ function openTicketDetails(ticket) {
   detailSla.textContent =
     dueLabel === "SLA overdue" ? "Overdue, needs attention" : `${dueLabel} (est.)`;
 
+  if (
+    ticketInlinePanel &&
+    ticketInlineEmpty &&
+    ticketInlineContent &&
+    inlineDetailSubject &&
+    inlineDetailTicketId &&
+    inlineDetailStatus &&
+    inlineDetailPriority &&
+    inlineDetailCategory &&
+    inlineDetailLocation &&
+    inlineDetailUpdated &&
+    inlineDetailDescription
+  ) {
+    ticketInlineEmpty.classList.add("hidden");
+    ticketInlineContent.classList.remove("hidden");
+
+    inlineDetailSubject.textContent = ticket.subject || "No subject";
+    inlineDetailTicketId.textContent = ticket.ticket_id ? `#${ticket.ticket_id}` : "";
+    inlineDetailStatus.className = `badge ${statusBadgeClass(status)}`;
+    inlineDetailStatus.textContent = prettyStatus(status);
+    inlineDetailPriority.className = `detail-priority-pill priority-${normalized}`;
+    inlineDetailPriority.textContent = prRaw;
+    inlineDetailCategory.textContent = `Department: ${ticket.category || "General Inquiry"}`;
+    inlineDetailLocation.textContent = `Location: ${ticket.location || "Not provided"}`;
+    inlineDetailUpdated.textContent = `Updated: ${new Date(updatedAt).toLocaleString()}`;
+    inlineDetailDescription.textContent =
+      ticket.description || "No additional description provided.";
+  }
+
   timelineList.innerHTML = "";
   const events = formatTimelineEvents(ticket);
   events.forEach((e) => {
@@ -587,7 +627,10 @@ function openTicketDetails(ticket) {
     timelineList.appendChild(li);
   });
 
-  openModal(ticketModal);
+  const preferInline = window.matchMedia("(min-width: 981px)").matches && !!ticketInlinePanel;
+  if (!preferInline) {
+    openModal(ticketModal);
+  }
 
   renderComments(ticket);
   if (btnAddComment) {

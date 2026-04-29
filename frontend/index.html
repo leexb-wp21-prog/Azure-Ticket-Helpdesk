@@ -19,58 +19,62 @@
         <p class="brand-kicker">IT Support Center</p>
         <div class="brand-row">
           <h1>QuickAid</h1>
-          <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
+          <div class="header-actions">
+            <div class="notif-wrap">
+              <button
+                type="button"
+                class="notif-action"
+                id="btnNotifications"
+                aria-haspopup="menu"
+                aria-controls="notifDropdown"
+                aria-expanded="false"
+                aria-label="Notifications"
+              >
+                <span class="notif-bell" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 22C13.1046 22 14 21.1046 14 20H10C10 21.1046 10.8954 22 12 22Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M18 16.0001H6C5.44772 16.0001 5 15.5523 5 15.0001C5 14.6234 5.20711 14.2741 5.54253 14.0937C6.29012 13.6942 7 12.9206 7 11.0001V8.5001C7 6.01483 8.79086 4.13745 11.232 4.01525C11.4821 4.00244 11.733 4.00244 11.9831 4.01525C14.4242 4.13745 16.2151 6.01483 16.2151 8.5001V11.0001C16.2151 12.9206 16.925 13.6942 17.6726 14.0937C18.008 14.2741 18.2151 14.6234 18.2151 15.0001C18.2151 15.5523 17.7674 16.0001 17.2151 16.0001H18Z"
+                      fill="currentColor"
+                      opacity="0.95"
+                    />
+                  </svg>
+                </span>
+                <span class="notif-badge hidden" id="notifBadge" aria-label="Unread notifications count">0</span>
+              </button>
+
+              <div class="notif-dropdown hidden" id="notifDropdown" role="menu" aria-label="Notifications dropdown">
+                <div class="notif-card">
+                  <div class="notif-head">
+                    <div class="notif-title">Notifications</div>
+                    <div class="notif-sub">
+                      You have <span class="notif-unread-count" id="notifUnreadCount">0</span> unread notifications
+                    </div>
+                  </div>
+                  <div class="notif-divider" aria-hidden="true"></div>
+                  <ul class="notif-list" id="notifList"></ul>
+                  <div class="notif-divider notif-divider-bottom" aria-hidden="true"></div>
+                  <button type="button" class="notif-mark-all" id="btnMarkAllRead">
+                    Mark all as read
+                  </button>
+                </div>
+              </div>
+            </div>
+            <a class="ghost-action auth-link icon-login" id="btnSignIn" href="./login.html" aria-label="Login">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" fill="currentColor" />
+                <path d="M4 20C4 16.6863 7.13401 14 11 14H13C16.866 14 20 16.6863 20 20V22H4V20Z" fill="currentColor" opacity="0.9" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
       <p class="header-copy">
         School Technology Help Desk
       </p>
-      <div class="header-actions">
-        <div class="notif-wrap">
-          <button
-            type="button"
-            class="notif-action"
-            id="btnNotifications"
-            aria-haspopup="menu"
-            aria-controls="notifDropdown"
-            aria-expanded="false"
-            aria-label="Notifications"
-          >
-            <span class="notif-bell" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M12 22C13.1046 22 14 21.1046 14 20H10C10 21.1046 10.8954 22 12 22Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M18 16.0001H6C5.44772 16.0001 5 15.5523 5 15.0001C5 14.6234 5.20711 14.2741 5.54253 14.0937C6.29012 13.6942 7 12.9206 7 11.0001V8.5001C7 6.01483 8.79086 4.13745 11.232 4.01525C11.4821 4.00244 11.733 4.00244 11.9831 4.01525C14.4242 4.13745 16.2151 6.01483 16.2151 8.5001V11.0001C16.2151 12.9206 16.925 13.6942 17.6726 14.0937C18.008 14.2741 18.2151 14.6234 18.2151 15.0001C18.2151 15.5523 17.7674 16.0001 17.2151 16.0001H18Z"
-                  fill="currentColor"
-                  opacity="0.95"
-                />
-              </svg>
-            </span>
-            <span class="notif-badge hidden" id="notifBadge" aria-label="Unread notifications count">0</span>
-          </button>
-
-          <div class="notif-dropdown hidden" id="notifDropdown" role="menu" aria-label="Notifications dropdown">
-            <div class="notif-card">
-              <div class="notif-head">
-                <div class="notif-title">Notifications</div>
-                <div class="notif-sub">
-                  You have <span class="notif-unread-count" id="notifUnreadCount">0</span> unread notifications
-                </div>
-              </div>
-              <div class="notif-divider" aria-hidden="true"></div>
-              <ul class="notif-list" id="notifList"></ul>
-              <div class="notif-divider notif-divider-bottom" aria-hidden="true"></div>
-              <button type="button" class="notif-mark-all" id="btnMarkAllRead">
-                Mark all as read
-              </button>
-            </div>
-          </div>
-        </div>
-        <a class="ghost-action auth-link" id="btnSignIn" href="./login.html">Login</a>
-      </div>
     </header>
 
     <aside class="sidebar" aria-label="Main navigation">
@@ -90,9 +94,6 @@
       <nav class="sidebar-nav" aria-label="Sidebar">
         <button type="button" class="sidebar-item" data-active="false">
           Dashboard <span class="sidebar-badge">4</span>
-        </button>
-        <button type="button" class="sidebar-item sidebar-item-active" data-active="true">
-          New Ticket
         </button>
         <button type="button" class="sidebar-item">Admin Panel</button>
         <button type="button" class="sidebar-item">Knowledge Base</button>
@@ -142,18 +143,9 @@
         </article>
       </section>
 
-      <nav class="tab-nav" aria-label="Primary">
-        <button class="tab-btn active" data-tab="submit" id="tabSubmit" type="button">
-          Submit Ticket
-        </button>
-        <button class="tab-btn" data-tab="track" id="tabTrack" type="button">
-          Track Tickets
-        </button>
-      </nav>
-
-      <section class="panel" id="submitPanel" aria-labelledby="tabSubmit">
+      <section class="panel" id="submitPanel" aria-labelledby="submitPanelTitle">
         <div class="panel-head">
-          <h2>Report a Campus Issue</h2>
+          <h2 id="submitPanelTitle">Report a Campus Issue</h2>
           <p>
             Fill in the details below. You will receive a ticket ID after submission.
           </p>
@@ -351,12 +343,17 @@
         </div>
       </section>
 
-      <section class="panel active" id="trackPanel" aria-labelledby="tabTrack">
+      <section class="panel active" id="trackPanel" aria-labelledby="trackPanelTitle">
         <div class="panel-head">
-          <h2>My Tickets</h2>
+          <div class="panel-head-row">
+            <h2 id="trackPanelTitle">My Tickets</h2>
+            <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
+          </div>
           <p>Track and manage your support requests.</p>
         </div>
 
+        <div class="track-workspace">
+          <div class="track-main">
         <form id="trackForm" class="track-form" novalidate>
           <label class="field">
             <span>Email <strong>*</strong></span>
@@ -377,7 +374,7 @@
           <input
             id="ticketSearch"
             type="search"
-            placeholder="Search tickets..."
+            placeholder="Search tickets…"
             aria-label="Search tickets"
           />
           <select id="categoryFilter" name="categoryFilter" aria-label="Category filter">
@@ -421,6 +418,31 @@
 
           <div class="tickets" id="ticketsResult" aria-live="polite"></div>
         </div>
+          </div>
+
+          <aside class="ticket-inline-panel" id="ticketInlinePanel" aria-live="polite">
+            <p class="ticket-inline-empty" id="ticketInlineEmpty">
+              Select a ticket from the list to view details here.
+            </p>
+            <div class="ticket-inline-content hidden" id="ticketInlineContent">
+              <div class="ticket-inline-head">
+                <h3 id="inlineDetailSubject">Ticket Details</h3>
+                <span class="muted" id="inlineDetailTicketId"></span>
+              </div>
+              <div class="ticket-inline-meta">
+                <span class="badge" id="inlineDetailStatus">Open</span>
+                <span class="detail-priority-pill" id="inlineDetailPriority">Medium</span>
+              </div>
+              <p class="muted" id="inlineDetailCategory">Department</p>
+              <p class="muted" id="inlineDetailLocation">Location</p>
+              <p class="muted" id="inlineDetailUpdated">Updated</p>
+              <div class="detail-block">
+                <h4>Issue description</h4>
+                <p class="detail-description muted" id="inlineDetailDescription"></p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
     </main>
 
@@ -462,7 +484,7 @@
                   id="commentText"
                   rows="3"
                   maxlength="2000"
-                  placeholder="Add an update for support (required details help us act faster)."
+                  placeholder="Add an update for support (required details help us act faster)…"
                 ></textarea>
                 <button type="button" id="btnAddComment">Add comment</button>
               </div>
