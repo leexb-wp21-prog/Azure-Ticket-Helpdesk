@@ -124,6 +124,26 @@ function sanitize(value) {
   return String(value || "").trim();
 }
 
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "short",
+});
+
+function formatDateTime(value) {
+  const date = new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) return "N/A";
+  return dateTimeFormatter.format(date);
+}
+
+function formatTime(value) {
+  const date = new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) return "N/A";
+  return timeFormatter.format(date);
+}
+
 function setFieldError(id, message) {
   const el = document.getElementById(`${id}Error`);
   if (el) el.textContent = message;
@@ -220,7 +240,7 @@ function saveDraft() {
     savedAt: Date.now(),
   };
   localStorage.setItem(draftStorageKey, JSON.stringify(draft));
-  const savedTime = new Date(draft.savedAt).toLocaleTimeString();
+  const savedTime = formatTime(draft.savedAt);
   draftHint.textContent = `Draft auto-saved at ${savedTime}.`;
 }
 
@@ -242,7 +262,7 @@ function loadDraft() {
     form.consent.checked = Boolean(draft.consent);
     descCount.textContent = String((draft.description || "").length);
     draftHint.textContent = draft.savedAt
-      ? `Draft restored from ${new Date(draft.savedAt).toLocaleString()}.`
+      ? `Draft restored from ${formatDateTime(draft.savedAt)}.`
       : "Draft restored.";
     slaHint.textContent = getSlaByPriority(form.priority.value);
     syncPrioritySegUi();
@@ -362,9 +382,7 @@ function renderTickets(items) {
     row.setAttribute("aria-label", `Open ticket ${t.ticket_id || "N/A"}`);
 
     const dueLabel = computeSlaDueLabel(t);
-    const updatedStr = new Date(
-      t.updated_at || t.submitted_at || Date.now()
-    ).toLocaleString();
+    const updatedStr = formatDateTime(t.updated_at || t.submitted_at || Date.now());
 
     const priorityRaw = String(t.priority || "Medium");
     const priorityKey =
@@ -565,7 +583,7 @@ function openTicketDetails(ticket) {
   detailCategory.textContent = `Department: ${ticket.category || "General Inquiry"}`;
   detailLocation.textContent = `Location: ${ticket.location || "Not provided"}`;
   const updatedAt = ticket.updated_at || ticket.submitted_at || Date.now();
-  detailUpdated.textContent = `Updated: ${new Date(updatedAt).toLocaleString()}`;
+  detailUpdated.textContent = `Updated: ${formatDateTime(updatedAt)}`;
 
   if (detailDepartment) {
     detailDepartment.textContent = ticket.department || ticket.category || "General Inquiry";
@@ -575,10 +593,10 @@ function openTicketDetails(ticket) {
   }
   if (detailCreated) {
     const createdAt = ticket.created_at || ticket.submitted_at || updatedAt;
-    detailCreated.textContent = new Date(createdAt).toLocaleString();
+    detailCreated.textContent = formatDateTime(createdAt);
   }
   if (detailLastUpdated) {
-    detailLastUpdated.textContent = new Date(updatedAt).toLocaleString();
+    detailLastUpdated.textContent = formatDateTime(updatedAt);
   }
   if (detailDescription) {
     detailDescription.textContent = ticket.description || "No additional description provided.";
@@ -612,7 +630,7 @@ function openTicketDetails(ticket) {
     inlineDetailPriority.textContent = prRaw;
     inlineDetailCategory.textContent = `Department: ${ticket.category || "General Inquiry"}`;
     inlineDetailLocation.textContent = `Location: ${ticket.location || "Not provided"}`;
-    inlineDetailUpdated.textContent = `Updated: ${new Date(updatedAt).toLocaleString()}`;
+    inlineDetailUpdated.textContent = `Updated: ${formatDateTime(updatedAt)}`;
     inlineDetailDescription.textContent =
       ticket.description || "No additional description provided.";
   }
@@ -622,7 +640,7 @@ function openTicketDetails(ticket) {
   events.forEach((e) => {
     const li = document.createElement("li");
     li.innerHTML = `<strong>${escapeHtml(e.label)}</strong> <span class="muted">${escapeHtml(
-      new Date(e.at).toLocaleString()
+      formatDateTime(e.at)
     )}</span>`;
     timelineList.appendChild(li);
   });
@@ -653,7 +671,7 @@ function renderComments(ticket) {
   comments.forEach((c) => {
     const li = document.createElement("li");
     const by = c.by || "Support";
-    const at = c.at ? new Date(c.at).toLocaleString() : "";
+    const at = c.at ? formatDateTime(c.at) : "";
     li.innerHTML = `
       <div><strong>${escapeHtml(by)}</strong></div>
       <div class="muted">${escapeHtml(at)}</div>
@@ -685,15 +703,15 @@ function addCommentToTicket(ticket) {
   ticket.updated_at = at;
 
   // Refresh UI
-  if (detailLastUpdated) detailLastUpdated.textContent = new Date(at).toLocaleString();
-  if (detailUpdated) detailUpdated.textContent = `Updated: ${new Date(at).toLocaleString()}`;
+  if (detailLastUpdated) detailLastUpdated.textContent = formatDateTime(at);
+  if (detailUpdated) detailUpdated.textContent = `Updated: ${formatDateTime(at)}`;
 
   timelineList.innerHTML = "";
   const events = formatTimelineEvents(ticket);
   events.forEach((e) => {
     const li = document.createElement("li");
     li.innerHTML = `<strong>${escapeHtml(e.label)}</strong> <span class="muted">${escapeHtml(
-      new Date(e.at).toLocaleString()
+      formatDateTime(e.at)
     )}</span>`;
     timelineList.appendChild(li);
   });
@@ -868,7 +886,6 @@ function renderNotifDropdown() {
   notifications.forEach((n) => {
     const li = document.createElement("li");
     li.className = `notif-item ${n.isRead ? "notif-item-read" : "notif-item-unread"}`;
-    li.setAttribute("role", "menuitem");
 
     const left = document.createElement("span");
     if (n.isRead) {
@@ -1198,7 +1215,10 @@ if (attachmentDropzone && attachmentInput) {
   const trigger = () => attachmentInput.click();
   attachmentDropzone.addEventListener("click", trigger);
   attachmentDropzone.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") trigger();
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      trigger();
+    }
   });
 }
 if (form.priority) {
