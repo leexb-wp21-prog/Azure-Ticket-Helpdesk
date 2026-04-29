@@ -25,9 +25,16 @@ const attachmentPreview = document.getElementById("attachmentPreview");
 const attachmentDropzone = document.getElementById("attachmentDropzone");
 const messageFromName = document.getElementById("messageFromName");
 const editorToolButtons = document.querySelectorAll(".message-toolbar .tool-btn[data-format]");
+const emojiPicker = document.getElementById("emojiPicker");
 const draftHint = document.getElementById("draftHint");
 const slaHint = document.getElementById("slaHint");
 const ticketsSkeleton = document.getElementById("ticketsSkeleton");
+
+function syncMessageFromName() {
+  if (!messageFromName) return;
+  const next = sanitize(form?.name?.value);
+  messageFromName.textContent = next || "Microsoft User";
+}
 
 const prioritySegButtons = document.querySelectorAll(
   ".priority-seg .seg-btn[data-priority]"
@@ -290,6 +297,8 @@ function randomTicketId() {
 }
 
 async function submitTicket(payload) {
+  // TODO(BACKEND): Keep POST /api/submit_ticket response shape stable and include
+  // ticket_id/status/timestamps so frontend can render a newly created ticket immediately.
   if (!API_BASE) {
     await sleep(600);
     const ticket = {
@@ -339,6 +348,8 @@ async function submitTicket(payload) {
 }
 
 async function getTicketsByEmail(email) {
+  // TODO(BACKEND): GET /api/get_tickets must return the just-created ticket for the same
+  // requester email soon after submit; frontend currently uses this endpoint as source of truth.
   if (!API_BASE) {
     await sleep(500);
     const items = mockTickets
@@ -478,6 +489,31 @@ function applyStatusFilter() {
   });
 
   renderTickets(filtered);
+}
+
+function openTrackPanel() {
+  if (panels?.submit && panels?.track) {
+    panels.submit.classList.remove("active");
+    panels.track.classList.add("active");
+  }
+  tabButtons.forEach((b) => b.classList.remove("active"));
+  const trackTabBtn = document.querySelector('.tab-btn[data-tab="track"]');
+  if (trackTabBtn) trackTabBtn.classList.add("active");
+}
+
+function showSubmittedTicketTemporarily(ticket, requesterEmail) {
+  if (!ticket) return;
+  // REMOVE_BEFORE_BACKEND_READY: Temporary local preview bridge.
+  // REMOVE_BEFORE_BACKEND_READY: Makes new ticket visible in "My Tickets" immediately.
+  const normalized = {
+    ...ticket,
+    email: ticket.email || requesterEmail || "",
+    updated_at: ticket.updated_at || ticket.submitted_at || currentIsoTime(),
+    submitted_at: ticket.submitted_at || currentIsoTime(),
+  };
+  const withoutSameId = lastLoadedTickets.filter((t) => String(t.ticket_id || "") !== String(normalized.ticket_id || ""));
+  lastLoadedTickets = [normalized, ...withoutSameId];
+  applyStatusFilter();
 }
 
 function escapeHtml(value) {
@@ -1030,18 +1066,60 @@ function replaceSelection(textarea, replacer) {
   saveDraft();
 }
 
+const emojiChoices = [
+  "😀",
+  "😄",
+  "😁",
+  "😎",
+  "🥳",
+  "🤩",
+  "🙂",
+  "😉",
+  "😊",
+  "🤗",
+  "👍",
+  "👏",
+  "🙏",
+  "💪",
+  "🔥",
+  "⭐",
+  "✅",
+  "❗",
+  "📌",
+  "💡",
+  "🛠️",
+  "📎",
+  "📷",
+  "🧾",
+];
+
+function closeEmojiPicker() {
+  if (!emojiPicker) return;
+  emojiPicker.classList.add("hidden");
+}
+
+function openEmojiPicker() {
+  if (!emojiPicker) return;
+  emojiPicker.classList.remove("hidden");
+}
+
+function toggleEmojiPicker() {
+  if (!emojiPicker) return;
+  emojiPicker.classList.toggle("hidden");
+}
+
 function applyEditorAction(action) {
   if (!desc) return;
   if (action === "attach") {
+    closeEmojiPicker();
     attachmentInput?.click();
     return;
   }
   if (action === "emoji") {
-    replaceSelection(desc, (selected) => ({
-      text: `${selected} 🙂`,
-    }));
+    toggleEmojiPicker();
     return;
   }
+  closeEmojiPicker();
   if (action === "bold") {
     replaceSelection(desc, (selected) => {
       const val = selected || "bold text";
@@ -1076,6 +1154,16 @@ function applyEditorAction(action) {
       return { text: `[${val}](https://)`, caretOffset: 3 + val.length };
     });
   }
+}
+
+function renderEmojiPicker() {
+  if (!emojiPicker) return;
+  emojiPicker.innerHTML = emojiChoices
+    .map(
+      (emoji) =>
+        `<button type="button" class="emoji-picker-btn" data-emoji="${emoji}" aria-label="Insert ${emoji}">${emoji}</button>`
+    )
+    .join("");
 }
 
 const knowledgeArticles = [
@@ -1157,7 +1245,12 @@ form.addEventListener("submit", async (event) => {
     attachmentInfo.textContent = "";
     if (attachmentPreview) attachmentPreview.classList.add("hidden");
     clearDraft();
-    setTimeout(() => closeCreateFormWrap(), 1400);
+    // REMOVE_BEFORE_BACKEND_READY: local preview injection for immediate UX feedback.
+    showSubmittedTicketTemporarily(result, payload.email);
+    setTimeout(() => {
+      closeCreateFormWrap();
+      openTrackPanel();
+    }, 700);
   } catch (error) {
     showSubmitResult("error", error.message);
   } finally {
@@ -1294,6 +1387,24 @@ if (editorToolButtons?.length) {
     });
   });
 }
+if (emojiPicker) {
+  renderEmojiPicker();
+  emojiPicker.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const emoji = target.dataset.emoji;
+    if (!emoji) return;
+    replaceSelection(desc, (selected) => ({ text: `${selected}${emoji}` }));
+    closeEmojiPicker();
+  });
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const inPicker = emojiPicker.contains(target);
+    const onEmojiBtn = Boolean(target.closest('.tool-btn[data-format="emoji"]'));
+    if (!inPicker && !onEmojiBtn) closeEmojiPicker();
+  });
+}
 if (form.priority) {
   form.priority.addEventListener("change", () => {
     slaHint.textContent = getSlaByPriority(form.priority.value);
@@ -1320,6 +1431,9 @@ if (prioritySegButtons?.length) {
   if (!form[fieldName]) return;
   form[fieldName].addEventListener("input", saveDraft);
 });
+if (form?.name) {
+  form.name.addEventListener("input", syncMessageFromName);
+}
 if (form.consent) form.consent.addEventListener("change", saveDraft);
 if (trackForm.trackEmail) {
   trackForm.trackEmail.addEventListener("keydown", (event) => {
@@ -1379,7 +1493,7 @@ function openCreateModal() {
   // Prefill requester identity from the signed-in session.
   if (form.name) form.name.value = session.name || form.name.value || "Portal User";
   if (form.email) form.email.value = session.email;
-  if (messageFromName) messageFromName.textContent = session.name || "Portal User";
+  syncMessageFromName();
 
   if (form.consent) form.consent.checked = true;
 
@@ -1435,6 +1549,7 @@ document.addEventListener("keydown", (e) => {
   closeModal(profileModal);
   if (createFormWrap) closeCreateFormWrap();
   closeNotifDropdown();
+  closeEmojiPicker();
 });
 
 // SLA countdown auto-refresh for visible ticket rows.

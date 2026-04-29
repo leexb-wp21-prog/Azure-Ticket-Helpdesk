@@ -1,0 +1,85 @@
+Backend Integration Notes (Create Ticket / My Tickets)
+=====================================================
+
+Purpose
+-------
+This file centralizes all frontend-to-backend integration expectations so backend can quickly align implementation.
+
+
+1) Required API Endpoints
+-------------------------
+1. POST /api/submit_ticket
+   - Used by create ticket form submit.
+   - Frontend sends JSON payload.
+
+2. GET /api/get_tickets?email=<requester_email>
+   - Used by "My Tickets" list retrieval.
+   - Should return requester's tickets.
+
+
+2) Current Submit Payload (Frontend)
+-----------------------------------
+The frontend currently submits:
+- request_type: string   (mapped from "Ticket type" field)
+- name: string
+- email: string
+- category: string       (currently mapped from "Assign to" field value)
+- department: string     (same source as category for now)
+- priority: "High" | "Medium" | "Low" (or future "Urgent")
+- assigned_to: string
+- subject: string        ("Ticket Name")
+- location: string       (optional, currently hidden in UI)
+- description: string
+
+Note:
+- Field mapping is based on current UI decisions and can be normalized later if backend wants stricter schema.
+
+
+3) Expected Response Shape
+--------------------------
+POST /api/submit_ticket should return a ticket object containing at least:
+- ticket_id
+- status
+- submitted_at (or created_at)
+- updated_at
+- subject
+- priority
+- category
+- department (recommended)
+- assignedTo or assigned_to
+- description
+
+GET /api/get_tickets should return:
+{
+  "tickets": [ ...ticket objects... ]
+}
+
+
+4) Consistency Requirement
+--------------------------
+After POST succeeds, GET by same requester email should include the newly created ticket quickly.
+Frontend "My Tickets" treats GET as source of truth for persisted data.
+
+
+5) Temporary Frontend Preview (TO REMOVE)
+-----------------------------------------
+Frontend currently contains a temporary local preview bridge so user can see new ticket immediately after create.
+
+Markers in code:
+- REMOVE_BEFORE_BACKEND_READY
+
+Current temporary behavior:
+- Inject newly created ticket into local list immediately
+- Auto-switch to "My Tickets" panel for instant visual feedback
+
+Backend-ready cleanup:
+- Remove the local preview injection path marked with REMOVE_BEFORE_BACKEND_READY
+- Keep only backend-driven refresh flow
+
+
+6) Optional Improvements for Backend + Frontend Alignment
+--------------------------------------------------------
+- Return a canonical field contract (e.g., category vs department vs assigned_to) to avoid duplicate mapping.
+- Provide stable enum values for status and priority.
+- Include comments/timeline in ticket detail response if available.
+

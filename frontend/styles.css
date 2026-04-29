@@ -741,39 +741,43 @@ textarea:focus-visible {
   background: rgba(10, 18, 28, 0.55);
   padding: 6vh 1rem;
   overflow: auto;
+  backdrop-filter: blur(2px);
 }
 
 .create-modal-head {
-  max-width: 980px;
-  margin: 0 auto 1rem;
+  margin: -1.1rem -1.1rem 1rem;
   display: flex;
   justify-content: space-between;
   gap: 0.8rem;
   align-items: center;
+  padding: 0.95rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  border-radius: 1rem 1rem 0 0;
 }
 
 .create-modal-head h3 {
   margin: 0;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  padding: 0.9rem 1.1rem;
   font-family: "Outfit", sans-serif;
-  flex: 1;
+  font-size: 1.4rem;
+  line-height: 1.2;
+  flex: 1 1 auto;
+  letter-spacing: -0.01em;
 }
 
 .create-form-wrap form {
-  max-width: 720px;
+  max-width: 780px;
   margin: 0 auto;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 1rem;
-  padding: 1.1rem;
-  box-shadow: 0 10px 30px rgba(36, 52, 70, 0.12);
+  padding: 1.15rem;
+  box-shadow: 0 14px 34px rgba(36, 52, 70, 0.14);
 }
 
 .create-form-wrap .form-grid {
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
+  gap: 1.05rem;
 }
 
 .create-form-wrap .actions {
@@ -781,7 +785,99 @@ textarea:focus-visible {
 }
 
 .create-form-wrap .modal-close {
-  background: #fff;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #313c4d;
+  font-size: 1.85rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.5rem;
+}
+
+#ticketForm .field > span {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+#ticketForm .field > span strong {
+  color: var(--danger);
+}
+
+#ticketForm input,
+#ticketForm select,
+#ticketForm textarea {
+  border: 1px solid #ccd8e5;
+  background: #fbfdff;
+  border-radius: 0.68rem;
+  min-height: 44px;
+  padding: 0.68rem 0.78rem;
+}
+
+#ticketForm textarea {
+  min-height: 128px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+#ticketForm input:focus,
+#ticketForm select:focus,
+#ticketForm textarea:focus {
+  border-color: #8db2db;
+  box-shadow: 0 0 0 3px rgba(36, 94, 168, 0.14);
+}
+
+#ticketForm .helper {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+}
+
+#ticketForm .error {
+  min-height: 1.25em;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+#ticketForm .priority-seg {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.35rem;
+}
+
+#ticketForm .seg-btn {
+  min-width: 0;
+}
+
+#ticketForm .message-toolbar {
+  padding-top: 0.72rem;
+  border-top: 1px dashed #d5e2ef;
+  margin-top: 0.15rem;
+}
+
+#ticketForm .attachment-dropzone {
+  background: #f5f9ff;
+  border-color: #abc9e6;
+}
+
+#ticketForm .attachment-dropzone:hover {
+  background: #edf5ff;
+  border-color: #93b8dd;
+}
+
+#ticketForm .actions {
+  border-top: 1px solid #e3ebf3;
+  padding-top: 0.95rem;
+}
+
+#ticketForm #submitBtn {
+  min-width: 160px;
+}
+
+#ticketForm #btnCancelCreate {
+  min-width: 110px;
 }
 
 /* Responsive create-ticket layout (matches provided screenshots) */
@@ -1051,6 +1147,38 @@ button:focus {
   flex-wrap: wrap;
 }
 
+.message-from {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.15rem 0 0.05rem;
+}
+
+.from-label {
+  color: #9aa5b5;
+  font-weight: 500;
+}
+
+.from-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.6rem;
+  border-radius: 999px;
+  background: #f2f5fb;
+  color: #1f2f44;
+}
+
+.from-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3e9f7;
+}
+
 .message-toolbar .tool-btn {
   width: 30px;
   height: 30px;
@@ -1071,6 +1199,40 @@ button:focus {
   background: var(--primary-soft);
   border-color: #c6d9ef;
   color: #244a79;
+}
+
+.emoji-picker {
+  margin-top: 0.55rem;
+  padding: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #fff;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.35rem;
+  max-width: 360px;
+  box-shadow: 0 10px 26px rgba(26, 38, 54, 0.12);
+}
+
+.emoji-picker-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.emoji-picker-btn:hover {
+  background: var(--primary-soft);
+  border-color: #c6d9ef;
 }
 
 button {

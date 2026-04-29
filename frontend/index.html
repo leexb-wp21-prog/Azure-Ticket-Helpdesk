@@ -100,11 +100,7 @@
         <button type="button" class="sidebar-item">Alerts</button>
       </nav>
 
-      <div class="sidebar-help-card">
-        <div class="sidebar-help-title">Need Help?</div>
-        <div class="sidebar-help-text">Chat with our AI assistant</div>
-        <div class="sidebar-help-cta">Click the chat button</div>
-      </div>
+  
     </aside>
 
     <main id="main-content" class="container main-layout">
@@ -192,12 +188,11 @@
         </div>
 
         <div id="createFormWrap" class="create-form-wrap hidden" aria-hidden="true">
-          <div class="create-modal-head">
-            <h3>Create New Ticket</h3>
-            <button type="button" class="modal-close" id="btnCloseCreate" aria-label="Close">×</button>
-          </div>
-
           <form id="ticketForm" novalidate>
+            <div class="create-modal-head">
+              <h3>Create New Ticket</h3>
+              <button type="button" class="modal-close" id="btnCloseCreate" aria-label="Close">×</button>
+            </div>
             <div class="form-grid">
             <label class="field">
               <span>Ticket type <strong>*</strong></span>
@@ -339,6 +334,7 @@
                 </button>
                 <button type="button" class="tool-btn" data-format="link" aria-label="Link">🔗</button>
               </div>
+              <div class="emoji-picker hidden" id="emojiPicker" aria-label="Emoji picker"></div>
               <small class="helper"><span id="descCount">0</span>/2000 characters</small>
               <small class="error" id="descriptionError"></small>
             </label>
