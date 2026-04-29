@@ -44,27 +44,6 @@ const btnSignIn = document.getElementById("btnSignIn");
 const btnProfile = document.getElementById("btnProfile");
 const btnLogout = document.getElementById("btnLogout");
 
-const ticketModal = document.getElementById("ticketModal");
-const detailStatusBadge = document.getElementById("detailStatusBadge");
-const detailPriorityPill = document.getElementById("detailPriorityPill");
-const detailStatusSelect = document.getElementById("detailStatusSelect");
-const detailPrioritySelect = document.getElementById("detailPrioritySelect");
-const detailSubject = document.getElementById("detailSubject");
-const detailCategory = document.getElementById("detailCategory");
-const detailLocation = document.getElementById("detailLocation");
-const detailUpdated = document.getElementById("detailUpdated");
-const detailDepartment = document.getElementById("detailDepartment");
-const detailAssignedTo = document.getElementById("detailAssignedTo");
-const detailCreated = document.getElementById("detailCreated");
-const detailLastUpdated = document.getElementById("detailLastUpdated");
-const detailDescription = document.getElementById("detailDescription");
-const detailTicketId = document.getElementById("detailTicketId");
-const detailSla = document.getElementById("detailSla");
-const timelineList = document.getElementById("timelineList");
-const commentsList = document.getElementById("commentsList");
-const commentText = document.getElementById("commentText");
-const btnAddComment = document.getElementById("btnAddComment");
-const btnViewDetailPage = document.getElementById("btnViewDetailPage");
 const btnInlineViewDetailPage = document.getElementById("btnInlineViewDetailPage");
 const ticketInlinePanel = document.getElementById("ticketInlinePanel");
 const ticketInlineEmpty = document.getElementById("ticketInlineEmpty");
@@ -574,87 +553,14 @@ function closeModal(modalEl) {
   modalEl.classList.add("hidden");
 }
 
-function formatTimelineEvents(ticket) {
-  const timeline = [];
-  const raw = ticket.timeline;
-
-  if (Array.isArray(raw) && raw.length) {
-    raw.forEach((evt) => {
-      if (!evt) return;
-      timeline.push({
-        label: evt.label || "Event",
-        at: evt.at || new Date().toISOString(),
-      });
-    });
-    // Always add a "viewed" marker for demo clarity.
-    timeline.push({ label: "Opened in portal", at: new Date().toISOString() });
-    return timeline;
-  }
-
-  const createdAt = ticket.created_at || ticket.submitted_at;
-  const updatedAt = ticket.updated_at;
-  const status = mapSafeStatus(ticket.status);
-
-  if (createdAt) timeline.push({ label: "Created", at: createdAt });
-  if (updatedAt) {
-    if (status === "New") timeline.push({ label: "Updated", at: updatedAt });
-    else timeline.push({ label: `Status: ${prettyStatus(status)}`, at: updatedAt });
-  }
-  timeline.push({ label: "Opened in portal", at: new Date().toISOString() });
-  return timeline;
-}
-
 function openTicketDetails(ticket) {
-  if (!ticketModal) return;
   const status = mapSafeStatus(ticket.status);
-  detailStatusBadge.className = `badge ${statusBadgeClass(status)}`;
-  detailStatusBadge.textContent = prettyStatus(status);
-  if (detailStatusSelect) {
-    detailStatusSelect.value = status;
-  }
-
   const prRaw = String(ticket.priority || "Medium");
   const pLower = prRaw.toLowerCase();
   const prKey = pLower === "urgent" ? "high" : pLower;
   const normalized =
     prKey === "low" || prKey === "high" ? prKey : "medium";
-  detailPriorityPill.className = `detail-priority-pill priority-${normalized}`;
-  detailPriorityPill.textContent = prRaw;
-
-  if (detailPrioritySelect) {
-    // Map urgent -> High so dropdown matches UI options.
-    detailPrioritySelect.value =
-      normalized === "high" ? "High" : normalized === "low" ? "Low" : "Medium";
-  }
-  detailSubject.textContent = ticket.subject || "No subject";
-  if (detailTicketId) {
-    detailTicketId.textContent = ticket.ticket_id ? `#${ticket.ticket_id}` : "";
-  }
-  detailCategory.textContent = `Department: ${ticket.category || "General Inquiry"}`;
-  detailLocation.textContent = `Location: ${ticket.location || "Not provided"}`;
   const updatedAt = ticket.updated_at || ticket.submitted_at || Date.now();
-  detailUpdated.textContent = `Updated: ${formatDateTime(updatedAt)}`;
-
-  if (detailDepartment) {
-    detailDepartment.textContent = ticket.department || ticket.category || "General Inquiry";
-  }
-  if (detailAssignedTo) {
-    detailAssignedTo.textContent = ticket.assignedTo || "Unassigned";
-  }
-  if (detailCreated) {
-    const createdAt = ticket.created_at || ticket.submitted_at || updatedAt;
-    detailCreated.textContent = formatDateTime(createdAt);
-  }
-  if (detailLastUpdated) {
-    detailLastUpdated.textContent = formatDateTime(updatedAt);
-  }
-  if (detailDescription) {
-    detailDescription.textContent = ticket.description || "No additional description provided.";
-  }
-
-  const dueLabel = computeSlaDueLabel(ticket);
-  detailSla.textContent =
-    dueLabel === "SLA overdue" ? "Overdue, needs attention" : `${dueLabel} (est.)`;
 
   if (
     ticketInlinePanel &&
@@ -685,30 +591,13 @@ function openTicketDetails(ticket) {
       ticket.description || "No additional description provided.";
   }
 
-  timelineList.innerHTML = "";
-  const events = formatTimelineEvents(ticket);
-  events.forEach((e) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${escapeHtml(e.label)}</strong> <span class="muted">${escapeHtml(
-      formatDateTime(e.at)
-    )}</span>`;
-    timelineList.appendChild(li);
-  });
-
-  const preferInline = window.matchMedia("(min-width: 981px)").matches && !!ticketInlinePanel;
-  if (!preferInline) {
-    openModal(ticketModal);
-  }
-
-  renderComments(ticket);
-  if (btnAddComment) {
-    btnAddComment.onclick = () => addCommentToTicket(ticket);
-  }
-  if (btnViewDetailPage) {
-    btnViewDetailPage.onclick = () => {
-      const ticketId = encodeURIComponent(ticket.ticket_id || "");
-      window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
-    };
+  // User requested removing ticket-detail modal from Preview Ticket flow.
+  // Desktop: keep inline preview panel. Small screens: go to full detail page.
+  const hasInlinePreview = Boolean(ticketInlinePanel);
+  const isDesktop = window.matchMedia("(min-width: 981px)").matches;
+  if (!hasInlinePreview || !isDesktop) {
+    const ticketId = encodeURIComponent(ticket.ticket_id || "");
+    window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
   }
   if (btnInlineViewDetailPage) {
     btnInlineViewDetailPage.onclick = () => {
@@ -716,71 +605,6 @@ function openTicketDetails(ticket) {
       window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
     };
   }
-}
-
-function renderComments(ticket) {
-  if (!commentsList) return;
-  const comments = Array.isArray(ticket.comments) ? ticket.comments : [];
-  commentsList.innerHTML = "";
-
-  if (!comments.length) {
-    const li = document.createElement("li");
-    li.textContent = "No comments yet. Add the details support needs to resolve this faster.";
-    commentsList.appendChild(li);
-    return;
-  }
-
-  comments.forEach((c) => {
-    const li = document.createElement("li");
-    const by = c.by || "Support";
-    const at = c.at ? formatDateTime(c.at) : "";
-    li.innerHTML = `
-      <div><strong>${escapeHtml(by)}</strong></div>
-      <div class="muted">${escapeHtml(at)}</div>
-      <div>${escapeHtml(c.text || "")}</div>
-    `;
-    commentsList.appendChild(li);
-  });
-}
-
-function addCommentToTicket(ticket) {
-  if (!commentText) return;
-  const text = sanitize(commentText.value);
-  if (!text) {
-    commentText.focus();
-    return;
-  }
-
-  const session = loadSession?.() || {};
-  const by = session.name || session.email || "Requester";
-  const at = currentIsoTime();
-
-  if (!Array.isArray(ticket.comments)) ticket.comments = [];
-  ticket.comments.push({ by, text, at });
-
-  // Keep raw events for formatTimelineEvents, which adds an "Opened in portal" marker.
-  if (!Array.isArray(ticket.timeline)) ticket.timeline = [];
-  ticket.timeline.push({ label: `Comment added (${by})`, at });
-
-  ticket.updated_at = at;
-
-  // Refresh UI
-  if (detailLastUpdated) detailLastUpdated.textContent = formatDateTime(at);
-  if (detailUpdated) detailUpdated.textContent = `Updated: ${formatDateTime(at)}`;
-
-  timelineList.innerHTML = "";
-  const events = formatTimelineEvents(ticket);
-  events.forEach((e) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${escapeHtml(e.label)}</strong> <span class="muted">${escapeHtml(
-      formatDateTime(e.at)
-    )}</span>`;
-    timelineList.appendChild(li);
-  });
-
-  renderComments(ticket);
-  commentText.value = "";
-  persistTicketCache(lastLoadedTickets);
 }
 
 const sessionKey = "quickaid-session-v1";
@@ -1573,14 +1397,12 @@ profileForm?.addEventListener("submit", (e) => {
 document.addEventListener("click", (e) => {
   const target = e.target;
   if (!target) return;
-  if (target.dataset?.closeTicket === "true") closeModal(ticketModal);
   if (target.dataset?.closeProfile === "true") closeModal(profileModal);
 });
 
 // Close modals on ESC.
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  closeModal(ticketModal);
   closeModal(profileModal);
   if (createFormWrap) closeCreateFormWrap();
   closeNotifDropdown();
