@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickAid - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./auth.css" />
+  </head>
+  <body>
+    <main class="auth-layout">
+      <section class="auth-hero">
+        <p class="auth-kicker">QuickAid Access</p>
+        <h1>Sign in</h1>
+        <p>Choose your role to preview role-based design theme before entering dashboard.</p>
+        <div class="role-preview" id="rolePreview" data-role="user">
+          <p class="role-title">User Theme</p>
+          <p class="role-copy">Blue support dashboard with simple ticket tracking focus.</p>
+        </div>
+      </section>
+      <section class="auth-panel">
+        <form id="loginPageForm" novalidate>
+          <label>
+            <span>Email</span>
+            <input id="loginEmail" type="email" placeholder="you@campus.edu" required />
+            <small class="error" id="loginEmailError"></small>
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="loginPassword" type="password" placeholder="Enter password" required />
+            <small class="error" id="loginPasswordError"></small>
+          </label>
+          <label>
+            <span>Role</span>
+            <select id="loginRole">
+              <option value="user" selected>User</option>
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+            </select>
+          </label>
+          <button type="submit">Login</button>
+        </form>
+        <div class="auth-links">
+          <a href="./register.html">Create account</a>
+          <a href="./index.html">Back to dashboard</a>
+        </div>
+      </section>
+    </main>
+    <script src="./auth.js" defer></script>
+  </body>
+</html>

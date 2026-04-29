@@ -16,31 +16,128 @@
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="app-header">
       <div class="brand">
-        <p class="brand-kicker">Campus Support Portal</p>
+        <p class="brand-kicker">IT Support Center</p>
         <h1>QuickAid</h1>
       </div>
       <p class="header-copy">
-        Submit issues, track request progress, and receive timely campus support.
+        School Technology Help Desk
       </p>
+      <div class="header-actions">
+        <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
+        <div class="notif-wrap">
+          <button
+            type="button"
+            class="notif-action hidden"
+            id="btnNotifications"
+            aria-haspopup="menu"
+            aria-controls="notifDropdown"
+            aria-expanded="false"
+            aria-label="Notifications"
+          >
+            <span class="notif-bell" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 22C13.1046 22 14 21.1046 14 20H10C10 21.1046 10.8954 22 12 22Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M18 16.0001H6C5.44772 16.0001 5 15.5523 5 15.0001C5 14.6234 5.20711 14.2741 5.54253 14.0937C6.29012 13.6942 7 12.9206 7 11.0001V8.5001C7 6.01483 8.79086 4.13745 11.232 4.01525C11.4821 4.00244 11.733 4.00244 11.9831 4.01525C14.4242 4.13745 16.2151 6.01483 16.2151 8.5001V11.0001C16.2151 12.9206 16.925 13.6942 17.6726 14.0937C18.008 14.2741 18.2151 14.6234 18.2151 15.0001C18.2151 15.5523 17.7674 16.0001 17.2151 16.0001H18Z"
+                  fill="currentColor"
+                  opacity="0.95"
+                />
+              </svg>
+            </span>
+            <span class="notif-badge hidden" id="notifBadge" aria-label="Unread notifications count">0</span>
+          </button>
+
+          <div class="notif-dropdown hidden" id="notifDropdown" role="menu" aria-label="Notifications dropdown">
+            <div class="notif-card">
+              <div class="notif-head">
+                <div class="notif-title">Notifications</div>
+                <div class="notif-sub">
+                  You have <span class="notif-unread-count" id="notifUnreadCount">0</span> unread notifications
+                </div>
+              </div>
+              <div class="notif-divider" aria-hidden="true"></div>
+              <ul class="notif-list" id="notifList"></ul>
+              <div class="notif-divider notif-divider-bottom" aria-hidden="true"></div>
+              <button type="button" class="notif-mark-all" id="btnMarkAllRead">
+                Mark all as read
+              </button>
+            </div>
+          </div>
+        </div>
+        <a class="ghost-action auth-link" id="btnSignIn" href="./login.html">Sign In</a>
+        <a class="ghost-action auth-link" id="btnRegister" href="./register.html">Register</a>
+        <button type="button" class="ms-action" id="btnMicrosoftSSO">
+          Sign in with Microsoft
+        </button>
+        <button type="button" class="ghost-action hidden" id="btnProfile">Profile</button>
+        <button type="button" class="ghost-action hidden" id="btnLogout">Logout</button>
+      </div>
     </header>
 
-    <main id="main-content" class="container">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo" aria-hidden="true">80</div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-title">TickIt</div>
+          <div class="sidebar-brand-sub">AI-Forwarded Support</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Sidebar">
+        <button type="button" class="sidebar-item" data-active="false">
+          Dashboard <span class="sidebar-badge">4</span>
+        </button>
+        <button type="button" class="sidebar-item sidebar-item-active" data-active="true">
+          New Ticket
+        </button>
+        <button type="button" class="sidebar-item">Admin Panel</button>
+        <button type="button" class="sidebar-item">Knowledge Base</button>
+        <button type="button" class="sidebar-item">Alerts</button>
+      </nav>
+
+      <div class="sidebar-help-card">
+        <div class="sidebar-help-title">Need Help?</div>
+        <div class="sidebar-help-text">Chat with our AI assistant</div>
+        <div class="sidebar-help-cta">Click the chat button</div>
+      </div>
+    </aside>
+
+    <main id="main-content" class="container main-layout">
       <section class="status-banner" id="statusBanner" role="status" aria-live="polite">
         Service status: Operational
       </section>
 
       <section class="quick-metrics" aria-label="Support at a glance">
-        <article>
-          <p class="metric-label">Average first response</p>
-          <p class="metric-value">Within 4 working hours</p>
+        <article class="stat-card" data-stat="Open">
+          <div class="stat-row">
+            <p class="metric-label">Open Tickets</p>
+            <div class="stat-icon" aria-hidden="true">?</div>
+          </div>
+          <p class="metric-value" id="statOpen">0</p>
         </article>
-        <article>
-          <p class="metric-label">Most requested service</p>
-          <p class="metric-value">IT Support</p>
+        <article class="stat-card" data-stat="InProgress">
+          <div class="stat-row">
+            <p class="metric-label">Active Tickets</p>
+            <div class="stat-icon" aria-hidden="true">⏱</div>
+          </div>
+          <p class="metric-value" id="statInProgress">0</p>
         </article>
-        <article>
-          <p class="metric-label">Submission tip</p>
-          <p class="metric-value">Add location and clear issue steps</p>
+        <article class="stat-card" data-stat="Resolved">
+          <div class="stat-row">
+            <p class="metric-label">Resolved</p>
+            <div class="stat-icon" aria-hidden="true">✓</div>
+          </div>
+          <p class="metric-value" id="statResolved">0</p>
+        </article>
+        <article class="stat-card" data-stat="Total">
+          <div class="stat-row">
+            <p class="metric-label">Total Tickets</p>
+            <div class="stat-icon" aria-hidden="true">▦</div>
+          </div>
+          <p class="metric-value" id="statTotal">0</p>
         </article>
       </section>
 
@@ -53,7 +150,7 @@
         </button>
       </nav>
 
-      <section class="panel active" id="submitPanel" aria-labelledby="tabSubmit">
+      <section class="panel" id="submitPanel" aria-labelledby="tabSubmit">
         <div class="panel-head">
           <h2>Report a Campus Issue</h2>
           <p>
@@ -70,10 +167,36 @@
           </div>
         </div>
 
-        <form id="ticketForm" novalidate>
-          <div class="form-grid">
+        <div class="submit-callout" id="submitCallout">
+          <h3 class="callout-title">Create a new ticket</h3>
+          <p class="muted">
+            Use the form below. It auto-saves while you type, and supports attachments.
+          </p>
+          <button type="button" class="primary-full" id="btnNewTicket">New Ticket</button>
+        </div>
+
+        <div id="createFormWrap" class="create-form-wrap hidden" aria-hidden="true">
+          <div class="create-modal-head">
+            <h3>Create New Ticket</h3>
+            <button type="button" class="modal-close" id="btnCloseCreate" aria-label="Close">×</button>
+          </div>
+
+          <form id="ticketForm" novalidate>
+            <div class="form-grid">
             <label class="field">
-              <span>Full Name <strong>*</strong></span>
+              <span>Category <strong>*</strong></span>
+              <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="Incident">Incident (something is broken)</option>
+                <option value="ServiceRequest">Service Request (need access/setup)</option>
+                <option value="Inquiry">General inquiry</option>
+                <option value="Software">Software</option>
+              </select>
+              <small class="error" id="categoryError"></small>
+            </label>
+
+            <label class="field desktop-only">
+              <span>Request by <strong>*</strong></span>
               <input
                 id="name"
                 name="name"
@@ -86,7 +209,7 @@
               <small class="error" id="nameError"></small>
             </label>
 
-            <label class="field">
+            <label class="field hidden">
               <span>Email <strong>*</strong></span>
               <input
                 id="email"
@@ -101,44 +224,56 @@
             </label>
 
             <label class="field">
-              <span>Category <strong>*</strong></span>
-              <select id="category" name="category" required>
-                <option value="">Select category</option>
-                <option>IT Support</option>
-                <option>Facilities</option>
-                <option>Academic Admin</option>
-                <option>Security</option>
-                <option>General Inquiry</option>
+              <span>Department <strong>*</strong></span>
+              <select id="department" name="department" required>
+                <option value="">Select department</option>
+                <option value="IT Support">IT Support</option>
+                <option value="Facilities">Facilities</option>
+                <option value="Academic Admin">Academic Admin</option>
+                <option value="Security">Security</option>
+                <option value="HR">HR</option>
+                <option value="General Inquiry">General Inquiry</option>
               </select>
-              <small class="error" id="categoryError"></small>
+              <small class="error" id="departmentError"></small>
             </label>
 
             <label class="field">
               <span>Priority</span>
-              <select id="priority" name="priority">
-                <option>Low</option>
-                <option selected>Medium</option>
-                <option>High</option>
-                <option>Urgent</option>
+              <select id="priority" name="priority" class="priority-select">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
               </select>
-              <small class="helper">Pick urgent only if campus operations are blocked.</small>
+              <div class="priority-seg" role="radiogroup" aria-label="Priority">
+                <button type="button" class="seg-btn" data-priority="Low" aria-pressed="false">Low</button>
+                <button type="button" class="seg-btn" data-priority="Medium" aria-pressed="true">Medium</button>
+                <button type="button" class="seg-btn" data-priority="High" aria-pressed="false">High</button>
+              </div>
+              <small class="helper">Higher priority gets faster first response.</small>
             </label>
 
             <label class="field field-wide">
-              <span>Subject <strong>*</strong></span>
+              <span class="desktop-only">Ticket Name <strong>*</strong></span>
+              <span class="mobile-only">Title <strong>*</strong></span>
               <input
                 id="subject"
                 name="subject"
                 type="text"
                 maxlength="120"
                 required
-                placeholder="Example: Unable to connect to campus Wi-Fi at Library Level 2"
+                placeholder="Brief description of the issue"
               />
               <small class="helper">Keep it short and specific so support can triage quickly.</small>
               <small class="error" id="subjectError"></small>
             </label>
 
-            <label class="field field-wide">
+            <div class="kb-suggestions field-wide hidden" id="kbSuggestions" aria-live="polite">
+              <p class="helper-title">Suggested help articles</p>
+              <p class="kb-empty">Start typing your subject to see relevant self-help guides.</p>
+              <ul id="kbList"></ul>
+            </div>
+
+            <label class="field field-wide hidden">
               <span>Location</span>
               <input
                 id="location"
@@ -150,33 +285,75 @@
             </label>
 
             <label class="field field-wide">
-              <span>Description <strong>*</strong></span>
+              <span class="desktop-only">Message <strong>*</strong></span>
+              <span class="mobile-only">Description <strong>*</strong></span>
               <textarea
                 id="description"
                 name="description"
                 rows="6"
                 maxlength="2000"
                 required
-                placeholder="Describe what happened, when it started, what you already tried, and any error message shown."
+                placeholder="Provide detailed information about the issue"
               ></textarea>
+              <div class="message-toolbar desktop-only" aria-hidden="true">
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Bold">B</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Italic">I</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Strikethrough">S</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Bullets">•</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Emojis">☺</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="Attachment">⎘</button>
+                <button type="button" class="tool-btn" tabindex="-1" aria-label="More">…</button>
+              </div>
               <small class="helper"><span id="descCount">0</span>/2000 characters</small>
               <small class="error" id="descriptionError"></small>
             </label>
+
+            <label class="field field-wide mobile-only attachment-field">
+              <span>Attach images (Optional)</span>
+              <div class="attachment-dropzone" id="attachmentDropzone" aria-hidden="true">
+                <div class="dropzone-icon">⤴</div>
+                <div class="dropzone-text">
+                  <strong>Click</strong> to upload screenshots or photos
+                  <div class="dropzone-subtitle">PNG, JPG, GIF up to 10MB</div>
+                </div>
+              </div>
+              <input id="attachment" name="attachment" type="file" class="attachment-input" accept=".png,.jpg,.jpeg,.gif" />
+              <small class="error" id="attachmentError"></small>
+              <small class="helper" id="attachmentInfo"></small>
+              <div class="attachment-preview hidden" id="attachmentPreview" aria-live="polite"></div>
+            </label>
+
+            <label class="field field-wide checkbox-field hidden">
+              <span class="checkbox-row">
+                <input id="consent" name="consent" type="checkbox" required />
+                I confirm the details are accurate and safe to share with support staff.
+              </span>
+              <small class="error" id="consentError"></small>
+            </label>
+          </div>
+
+          <div class="form-meta">
+            <p id="slaHint">Estimated first response SLA: 4 working hours</p>
+            <p id="draftHint">Draft not saved yet.</p>
           </div>
 
           <div class="actions">
-            <button type="submit" id="submitBtn">Submit Ticket</button>
-            <button type="reset" class="ghost">Reset</button>
+            <button type="button" class="ghost" id="btnCancelCreate">Cancel</button>
+            <button type="submit" id="submitBtn">
+              <span class="desktop-only">Create</span>
+              <span class="mobile-only">Create Ticket</span>
+            </button>
           </div>
-        </form>
+          </form>
 
-        <div class="result hidden" id="submitResult" aria-live="polite"></div>
+          <div class="result hidden" id="submitResult" aria-live="polite"></div>
+        </div>
       </section>
 
-      <section class="panel" id="trackPanel" aria-labelledby="tabTrack">
+      <section class="panel active" id="trackPanel" aria-labelledby="tabTrack">
         <div class="panel-head">
-          <h2>Track Ticket Status</h2>
-          <p>Search your requests by email and review current statuses.</p>
+          <h2>My Tickets</h2>
+          <p>Track and manage your support requests.</p>
         </div>
 
         <form id="trackForm" class="track-form" novalidate>
@@ -195,18 +372,54 @@
           <button type="submit" id="trackBtn">Find Tickets</button>
         </form>
 
-        <div class="track-toolbar">
-          <label for="statusFilter">Filter by status</label>
-          <select id="statusFilter" name="statusFilter">
-            <option value="All">All</option>
-            <option value="New">New</option>
-            <option value="InProgress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
+        <div class="filter-card" aria-label="Ticket filters">
+          <input
+            id="ticketSearch"
+            type="search"
+            placeholder="Search tickets..."
+            aria-label="Search tickets"
+          />
+          <select id="categoryFilter" name="categoryFilter" aria-label="Category filter">
+            <option value="All">All Categories</option>
+            <option value="IT Support">IT Support</option>
+            <option value="Facilities">Facilities</option>
+            <option value="Academic Admin">Academic Admin</option>
+            <option value="Security">Security</option>
+            <option value="General Inquiry">General Inquiry</option>
+          </select>
+          <select id="priorityFilter" name="priorityFilter" aria-label="Priority filter">
+            <option value="All">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
           </select>
         </div>
 
-        <div class="tickets" id="ticketsResult" aria-live="polite"></div>
+        <div class="status-tabs" role="tablist" aria-label="Status tabs">
+          <button type="button" class="status-tab active" data-status="All" role="tab" aria-selected="true">
+            All (<span id="tabCountAll">0</span>)
+          </button>
+          <button type="button" class="status-tab" data-status="Open" role="tab" aria-selected="false">
+            Open (<span id="tabCountOpen">0</span>)
+          </button>
+          <button type="button" class="status-tab" data-status="InProgress" role="tab" aria-selected="false">
+            In Progress (<span id="tabCountInProgress">0</span>)
+          </button>
+          <button type="button" class="status-tab" data-status="Resolved" role="tab" aria-selected="false">
+            Resolved (<span id="tabCountResolved">0</span>)
+          </button>
+        </div>
+
+        <div class="tickets-shell">
+          <div class="tickets-skeleton hidden" id="ticketsSkeleton" aria-hidden="true">
+            <div class="s-row"></div>
+            <div class="s-row"></div>
+            <div class="s-row"></div>
+            <div class="s-row"></div>
+          </div>
+
+          <div class="tickets" id="ticketsResult" aria-live="polite"></div>
+        </div>
       </section>
     </main>
 
@@ -214,6 +427,132 @@
       <p>QuickAid Smart Campus Helpdesk</p>
       <p>Frontend Phase 2-3</p>
     </footer>
+
+    <div class="modal hidden" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle">
+      <div class="modal-backdrop" data-close-ticket="true"></div>
+      <div class="modal-card modal-card-large" role="document">
+        <div class="modal-head">
+          <h2 id="ticketModalTitle">Ticket Details <span id="detailTicketId" class="muted"></span></h2>
+          <button type="button" class="modal-close" data-close-ticket="true" aria-label="Close">×</button>
+        </div>
+
+        <div class="ticket-detail-grid">
+          <div class="detail-left">
+            <div class="detail-topline">
+              <span class="badge" id="detailStatusBadge">New</span>
+              <span class="detail-priority-pill" id="detailPriorityPill">Medium</span>
+            </div>
+
+            <h3 id="detailSubject" class="detail-subject">Subject</h3>
+            <p class="muted" id="detailCategory">Department</p>
+            <p class="muted" id="detailLocation">Location</p>
+            <p class="muted" id="detailUpdated">Updated</p>
+
+            <div class="detail-block">
+              <h4>Issue description</h4>
+              <p id="detailDescription" class="detail-description muted"></p>
+            </div>
+
+            <div class="detail-block">
+              <h4>Comments</h4>
+              <ul class="comment-list" id="commentsList" aria-live="polite"></ul>
+              <div class="comment-compose">
+                <textarea
+                  id="commentText"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="Add an update for support (required details help us act faster)."
+                ></textarea>
+                <button type="button" id="btnAddComment">Add comment</button>
+              </div>
+              <p class="helper" id="commentHint">Tip: Include what you tried, the time, and any error message.</p>
+            </div>
+
+            <div class="detail-block">
+              <div class="timeline">
+                <h4>Activity Timeline</h4>
+                <ul id="timelineList"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-right">
+            <div class="detail-dropdown-row" aria-label="Status and priority">
+              <label class="detail-dd">
+                <span>Status</span>
+                <select id="detailStatusSelect" disabled>
+                  <option value="New">Open</option>
+                  <option value="InProgress">In Progress</option>
+                  <option value="Resolved">Resolved</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </label>
+              <label class="detail-dd">
+                <span>Priority</span>
+                <select id="detailPrioritySelect" disabled>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="info-block">
+              <h4>Ticket information</h4>
+              <div class="info-row">
+                <span class="info-key">Department</span>
+                <span class="info-val" id="detailDepartment">IT</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">Assigned to</span>
+                <span class="info-val" id="detailAssignedTo">Unassigned</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">Created</span>
+                <span class="info-val" id="detailCreated">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-key">Last updated</span>
+                <span class="info-val" id="detailLastUpdated">-</span>
+              </div>
+            </div>
+
+            <div class="sla-block">
+              <p class="sla-label">Estimated SLA</p>
+              <p class="sla-value" id="detailSla">Within 4 working hours</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+      <div class="modal-backdrop" data-close-profile="true"></div>
+      <div class="modal-card" role="document">
+        <div class="modal-head">
+          <h2 id="profileModalTitle">Profile and settings</h2>
+          <button type="button" class="modal-close" data-close-profile="true" aria-label="Close">×</button>
+        </div>
+
+        <form id="profileForm" class="profile-form" novalidate>
+          <p class="muted" id="profileEmail">Signed in as</p>
+
+          <fieldset class="fieldset">
+            <legend>Notifications</legend>
+            <label class="check-row">
+              <input type="checkbox" id="notifEmail" />
+              Email me ticket updates
+            </label>
+            <label class="check-row">
+              <input type="checkbox" id="notifInApp" />
+              Show in-app alerts
+            </label>
+          </fieldset>
+
+          <button type="submit" class="primary-full">Save</button>
+        </form>
+      </div>
+    </div>
 
     <script src="./app.js" defer></script>
   </body>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickAid - Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./auth.css" />
+  </head>
+  <body>
+    <main class="auth-layout">
+      <section class="auth-hero">
+        <p class="auth-kicker">QuickAid Onboarding</p>
+        <h1>Create account</h1>
+        <p>Register as user, admin, or staff and get a matching workspace design style.</p>
+        <div class="role-preview" id="rolePreview" data-role="user">
+          <p class="role-title">User Theme</p>
+          <p class="role-copy">Blue support dashboard with simple ticket tracking focus.</p>
+        </div>
+      </section>
+      <section class="auth-panel">
+        <form id="registerPageForm" novalidate>
+          <label>
+            <span>Full name</span>
+            <input id="registerName" type="text" placeholder="Your name" required />
+            <small class="error" id="registerNameError"></small>
+          </label>
+          <label>
+            <span>Email</span>
+            <input id="registerEmail" type="email" placeholder="you@campus.edu" required />
+            <small class="error" id="registerEmailError"></small>
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="registerPassword" type="password" placeholder="Create password" required />
+            <small class="error" id="registerPasswordError"></small>
+          </label>
+          <label>
+            <span>Role</span>
+            <select id="registerRole">
+              <option value="user" selected>User</option>
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+            </select>
+          </label>
+          <button type="submit">Register</button>
+        </form>
+        <div class="auth-links">
+          <a href="./login.html">Already have account</a>
+          <a href="./index.html">Back to dashboard</a>
+        </div>
+      </section>
+    </main>
+    <script src="./auth.js" defer></script>
+  </body>
+</html>

@@ -5,14 +5,35 @@ Frontend implementation for:
 - Ticket submission form (HTML/CSS/JS)
 - Client-side form validation
 - Track ticket by email
+- Guided intake UX (templates, knowledge suggestions, SLA hint)
+- Draft auto-save and recovery
+- Attachment validation (client-side)
+- Ticket detail modal with timeline
+- Separate Login/Register pages with role-based onboarding
+- Role-based UI design themes (user, admin, staff)
+- SLA due label with auto-refresh
 - Azure App Service static hosting ready
 
 ## Files
 
 - `index.html`: app structure and form screens
+- `login.html`: dedicated login page
+- `register.html`: dedicated registration page
 - `styles.css`: responsive styling and states
 - `app.js`: validation, API calls, submit/track logic
+- `auth.css`: auth page styling
+- `auth.js`: login/register page logic and session persistence
 - `web.config`: Azure App Service static hosting settings (Windows)
+
+## Updated Plan
+
+- Move authentication from modal to standalone pages for clearer flow.
+- Keep notifications at the top-right of the app shell for quick access.
+- Provide three visual variants by role:
+  - `user`: primary blue support workspace
+  - `admin`: amber/orange operations workspace
+  - `staff`: green service workspace
+- Apply role theme from session after login/register.
 
 ## Run Locally
 
@@ -39,11 +60,22 @@ Expected endpoints:
 ## Validation Rules Implemented
 
 - Required: name, email, category, subject, description
+- Required: request type and consent checkbox
 - Email format check
 - Subject max 120 chars
 - Description max 2000 chars
 - Basic unsafe character guard (`<` and `>`)
+- Attachment max size: 5 MB, limited file extensions
 - Prevent duplicate submit while request is pending
+
+## UX Enhancements Implemented
+
+- Placeholder + helper text for every major field
+- Quick templates (`Wi-Fi`, `Aircond`, `Portal login`) to reduce submission friction
+- Suggested self-help articles based on subject keywords
+- Dynamic first-response SLA hint by priority
+- Track tickets with status filter and sort options
+- Draft autosave in `localStorage` and restore on reload
 
 ## Azure App Service Deployment (Static Files)
 
