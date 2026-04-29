@@ -64,6 +64,8 @@ const timelineList = document.getElementById("timelineList");
 const commentsList = document.getElementById("commentsList");
 const commentText = document.getElementById("commentText");
 const btnAddComment = document.getElementById("btnAddComment");
+const btnViewDetailPage = document.getElementById("btnViewDetailPage");
+const btnInlineViewDetailPage = document.getElementById("btnInlineViewDetailPage");
 const ticketInlinePanel = document.getElementById("ticketInlinePanel");
 const ticketInlineEmpty = document.getElementById("ticketInlineEmpty");
 const ticketInlineContent = document.getElementById("ticketInlineContent");
@@ -124,6 +126,15 @@ const statTotal = document.getElementById("statTotal");
 
 const mockTickets = [];
 let lastLoadedTickets = [];
+const ticketCacheStorageKey = "quickaid-ticket-cache-v1";
+
+function persistTicketCache(items) {
+  try {
+    localStorage.setItem(ticketCacheStorageKey, JSON.stringify(Array.isArray(items) ? items : []));
+  } catch {
+    // no-op: storage full or unavailable
+  }
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -413,7 +424,7 @@ function renderTickets(items) {
     )}</span>
         </div>
         <div class="ticket-card-right">
-          <div class="ticket-view">View Details</div>
+          <div class="ticket-view">Preview Ticket</div>
         </div>
       </div>
 
@@ -513,6 +524,7 @@ function showSubmittedTicketTemporarily(ticket, requesterEmail) {
   };
   const withoutSameId = lastLoadedTickets.filter((t) => String(t.ticket_id || "") !== String(normalized.ticket_id || ""));
   lastLoadedTickets = [normalized, ...withoutSameId];
+  persistTicketCache(lastLoadedTickets);
   applyStatusFilter();
 }
 
@@ -692,6 +704,18 @@ function openTicketDetails(ticket) {
   if (btnAddComment) {
     btnAddComment.onclick = () => addCommentToTicket(ticket);
   }
+  if (btnViewDetailPage) {
+    btnViewDetailPage.onclick = () => {
+      const ticketId = encodeURIComponent(ticket.ticket_id || "");
+      window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
+    };
+  }
+  if (btnInlineViewDetailPage) {
+    btnInlineViewDetailPage.onclick = () => {
+      const ticketId = encodeURIComponent(ticket.ticket_id || "");
+      window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
+    };
+  }
 }
 
 function renderComments(ticket) {
@@ -756,6 +780,7 @@ function addCommentToTicket(ticket) {
 
   renderComments(ticket);
   commentText.value = "";
+  persistTicketCache(lastLoadedTickets);
 }
 
 const sessionKey = "quickaid-session-v1";
@@ -1017,34 +1042,43 @@ function validateAttachment() {
   setFieldError("attachment", "");
   attachmentInfo.textContent = "";
   if (attachmentPreview) attachmentPreview.classList.add("hidden");
-  const file = attachmentInput.files?.[0];
-  if (!file) {
+  const files = Array.from(attachmentInput.files || []);
+  if (!files.length) {
     if (attachmentPreview) attachmentPreview.innerHTML = "";
     return true;
   }
-  const maxBytes = 10 * 1024 * 1024; // Screenshot: up to 10MB
-  if (file.size > maxBytes) {
-    setFieldError("attachment", "Attachment must be 10 MB or smaller.");
+  if (files.length > 5) {
+    setFieldError("attachment", "You can attach up to 5 files total.");
     return false;
   }
-  const sizeKb = Math.ceil(file.size / 1024);
-  attachmentInfo.textContent = `Attached: ${file.name} (${sizeKb} KB)`;
+  const maxBytes = 10 * 1024 * 1024; // Screenshot: up to 10MB
+  const oversize = files.find((file) => file.size > maxBytes);
+  if (oversize) {
+    setFieldError("attachment", "Each attachment must be 10 MB or smaller.");
+    return false;
+  }
+  const fileSummary = files
+    .map((file) => `${file.name} (${Math.ceil(file.size / 1024)} KB)`)
+    .join(", ");
+  attachmentInfo.textContent = `Attached (${files.length}/5): ${fileSummary}`;
 
   if (attachmentPreview) {
-    if (String(file.type || "").startsWith("image/")) {
+    const imageFiles = files.filter((file) => String(file.type || "").startsWith("image/"));
+    if (imageFiles.length) {
       const reader = new FileReader();
+      const first = imageFiles[0];
       reader.onload = () => {
         attachmentPreview.innerHTML = `
           <img src="${String(reader.result)}" alt="Attachment preview" />
-          <div class="filemeta">${escapeHtml(file.name)}</div>
+          <div class="filemeta">${escapeHtml(first.name)}${
+            files.length > 1 ? ` (+${files.length - 1} more)` : ""
+          }</div>
         `;
         attachmentPreview.classList.remove("hidden");
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(first);
     } else {
-      attachmentPreview.innerHTML = `
-        <div class="filemeta">File: ${escapeHtml(file.name)}</div>
-      `;
+      attachmentPreview.innerHTML = `<div class="filemeta">${escapeHtml(files.length)} file(s) selected</div>`;
       attachmentPreview.classList.remove("hidden");
     }
   }
@@ -1110,11 +1144,6 @@ function toggleEmojiPicker() {
 
 function applyEditorAction(action) {
   if (!desc) return;
-  if (action === "attach") {
-    closeEmojiPicker();
-    attachmentInput?.click();
-    return;
-  }
   if (action === "emoji") {
     toggleEmojiPicker();
     return;
@@ -1221,6 +1250,11 @@ form.addEventListener("submit", async (event) => {
     subject: sanitize(form.subject.value),
     location: sanitize(form.location.value),
     description: sanitize(form.description.value),
+    attachments: Array.from(attachmentInput?.files || []).slice(0, 5).map((file) => ({
+      name: file.name,
+      type: file.type || "application/octet-stream",
+      size: file.size,
+    })),
   };
 
   const errors = validateTicketPayload(payload);
@@ -1282,6 +1316,7 @@ trackForm.addEventListener("submit", async (event) => {
   try {
     const data = await getTicketsByEmail(email);
     lastLoadedTickets = Array.isArray(data.tickets) ? data.tickets : [];
+    persistTicketCache(lastLoadedTickets);
     applyStatusFilter();
   } catch (error) {
     lastLoadedTickets = [];
@@ -1577,6 +1612,7 @@ if (bootSession?.email) {
     try {
       const data = await getTicketsByEmail(bootSession.email);
       lastLoadedTickets = Array.isArray(data?.tickets) ? data.tickets : [];
+      persistTicketCache(lastLoadedTickets);
       applyStatusFilter();
     } catch {
       lastLoadedTickets = [];

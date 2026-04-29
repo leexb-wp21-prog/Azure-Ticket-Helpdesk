@@ -327,11 +327,6 @@
                     <circle cx="14.7" cy="10.3" r="1" fill="currentColor" />
                   </svg>
                 </button>
-                <button type="button" class="tool-btn" data-format="attach" aria-label="Attachment">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M8.6 12.7L14.9 6.5C16.3 5.1 18.5 5.1 19.9 6.5C21.3 7.9 21.3 10.1 19.9 11.5L11.8 19.6C9.7 21.7 6.3 21.7 4.2 19.6C2.1 17.5 2.1 14.1 4.2 12L12.4 3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
                 <button type="button" class="tool-btn" data-format="link" aria-label="Link">🔗</button>
               </div>
               <div class="emoji-picker hidden" id="emojiPicker" aria-label="Emoji picker"></div>
@@ -350,10 +345,10 @@
                 </div>
                 <div class="dropzone-text">
                   <strong>Click</strong> to upload screenshots or photos
-                  <div class="dropzone-subtitle">PNG, JPG, GIF up to 10MB</div>
+                  <div class="dropzone-subtitle">PNG, JPG, GIF up to 10MB each (max 5 files)</div>
                 </div>
               </div>
-              <input id="attachment" name="attachment" type="file" class="attachment-input" accept=".png,.jpg,.jpeg,.gif" />
+              <input id="attachment" name="attachment" type="file" class="attachment-input" accept=".png,.jpg,.jpeg,.gif" multiple />
               <small class="error" id="attachmentError"></small>
               <small class="helper" id="attachmentInfo"></small>
               <div class="attachment-preview hidden" id="attachmentPreview" aria-live="polite"></div>
@@ -468,7 +463,7 @@
 
           <aside class="ticket-inline-panel" id="ticketInlinePanel" aria-live="polite">
             <p class="ticket-inline-empty" id="ticketInlineEmpty">
-              Select a ticket from the list to view details here.
+              Select a ticket from the list to preview ticket here.
             </p>
             <div class="ticket-inline-content hidden" id="ticketInlineContent">
               <div class="ticket-inline-head">
@@ -485,6 +480,9 @@
               <div class="detail-block">
                 <h4>Issue description</h4>
                 <p class="detail-description muted" id="inlineDetailDescription"></p>
+              </div>
+              <div class="detail-actions">
+                <button type="button" id="btnInlineViewDetailPage">View Details</button>
               </div>
             </div>
           </aside>
@@ -542,6 +540,9 @@
                 <h4>Activity Timeline</h4>
                 <ul id="timelineList"></ul>
               </div>
+            </div>
+            <div class="detail-actions">
+              <button type="button" id="btnViewDetailPage">View Details</button>
             </div>
           </div>
 
