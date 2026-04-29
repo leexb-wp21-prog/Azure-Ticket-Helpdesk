@@ -384,18 +384,27 @@ textarea:focus-visible {
   height: 44px;
   border-radius: 999px;
   padding: 0;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--primary);
+  position: relative;
+  cursor: pointer;
   transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
 }
 
 .icon-login:hover {
   background: var(--surface-hover);
   border-color: #c5d4e5;
+  color: var(--primary);
   transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(31, 79, 141, 0.2);
 }
 
 .icon-login:active {
   background: var(--surface-active);
+  color: var(--primary);
   transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(31, 79, 141, 0.16);
 }
 
 .ms-action {
@@ -1088,6 +1097,12 @@ button:active {
   box-shadow: 0 3px 8px rgba(31, 79, 141, 0.16);
 }
 
+/* Keep notification icon color stable on hover/active. */
+.notif-action:hover,
+.notif-action:active {
+  color: var(--primary);
+}
+
 /* Keep secondary controls readable; avoid global button hover override. */
 button.ghost:hover {
   background: var(--surface-hover);
@@ -1100,7 +1115,6 @@ button.ghost:hover {
 .chip:hover,
 .seg-btn:hover,
 .message-toolbar .tool-btn:hover,
-.notif-action:hover,
 .notif-mark-all:hover,
 .status-tab:hover,
 .modal-close:hover,

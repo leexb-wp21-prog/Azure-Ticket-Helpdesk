@@ -200,9 +200,9 @@
           <form id="ticketForm" novalidate>
             <div class="form-grid">
             <label class="field">
-              <span>Category <strong>*</strong></span>
+              <span>Ticket type <strong>*</strong></span>
               <select id="category" name="category" autocomplete="off" required>
-                <option value="">Select category</option>
+                <option value="">Ticket Type</option>
                 <option value="Incident">Incident (something is broken)</option>
                 <option value="ServiceRequest">Service Request (need access/setup)</option>
                 <option value="Inquiry">General inquiry</option>
@@ -243,9 +243,9 @@
             </label>
 
             <label class="field">
-              <span>Department <strong>*</strong></span>
+              <span>Assign to <strong>*</strong></span>
               <select id="department" name="department" autocomplete="off" required>
-                <option value="">Select department</option>
+                <option value="">Select assigne</option>
                 <option value="IT Support">IT Support</option>
                 <option value="Facilities">Facilities</option>
                 <option value="Academic Admin">Academic Admin</option>
@@ -259,21 +259,20 @@
             <label class="field">
               <span>Priority</span>
               <select id="priority" name="priority" class="priority-select">
-                <option value="Low">Low</option>
-                <option value="Medium" selected>Medium</option>
                 <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
               </select>
               <div class="priority-seg" role="radiogroup" aria-label="Priority">
-                <button type="button" class="seg-btn" data-priority="Low" aria-pressed="false">Low</button>
-                <button type="button" class="seg-btn" data-priority="Medium" aria-pressed="true">Medium</button>
                 <button type="button" class="seg-btn" data-priority="High" aria-pressed="false">High</button>
+                <button type="button" class="seg-btn" data-priority="Medium" aria-pressed="true">Medium</button>
+                <button type="button" class="seg-btn" data-priority="Low" aria-pressed="false">Low</button>
               </div>
               <small class="helper">Higher priority gets faster first response.</small>
             </label>
 
             <label class="field field-wide">
-              <span class="desktop-only">Ticket Name <strong>*</strong></span>
-              <span class="mobile-only">Title <strong>*</strong></span>
+              <span>Ticket Name <strong>*</strong></span>
               <input
                 id="subject"
                 name="subject"
@@ -281,7 +280,7 @@
                 maxlength="120"
                 required
                 autocomplete="off"
-                placeholder="Example: Wi-Fi disconnects in Block C…"
+                placeholder="Ticket Name"
               />
               <small class="helper">Keep it short and specific so support can triage quickly.</small>
               <small class="error" id="subjectError"></small>
@@ -306,8 +305,11 @@
             </label>
 
             <label class="field field-wide">
-              <span class="desktop-only">Message <strong>*</strong></span>
-              <span class="mobile-only">Description <strong>*</strong></span>
+              <span>Message <strong>*</strong></span>
+              <div class="message-from">
+                <span class="from-label">from</span>
+                <span class="from-chip"><span class="from-avatar">👨🏻</span><span id="messageFromName">Portal User</span></span>
+              </div>
               <textarea
                 id="description"
                 name="description"
@@ -315,14 +317,14 @@
                 maxlength="2000"
                 required
                 autocomplete="off"
-                placeholder="Example: Started at 10:30, error shown, steps already tried…"
+                placeholder="Enter your message.."
               ></textarea>
               <div class="message-toolbar desktop-only" aria-hidden="true">
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Bold">B</button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Italic">I</button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Strikethrough">S</button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Bullets">•</button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Emojis">
+                <button type="button" class="tool-btn" data-format="bold" aria-label="Bold">B</button>
+                <button type="button" class="tool-btn" data-format="italic" aria-label="Italic">I</button>
+                <button type="button" class="tool-btn" data-format="strike" aria-label="Strikethrough">S</button>
+                <button type="button" class="tool-btn" data-format="bullet" aria-label="Bullets">•</button>
+                <button type="button" class="tool-btn" data-format="emoji" aria-label="Emojis">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8" />
                     <path d="M9.4 14.1C10.1 15 11 15.5 12 15.5C13 15.5 13.9 15 14.6 14.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
@@ -330,12 +332,12 @@
                     <circle cx="14.7" cy="10.3" r="1" fill="currentColor" />
                   </svg>
                 </button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="Attachment">
+                <button type="button" class="tool-btn" data-format="attach" aria-label="Attachment">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M8.6 12.7L14.9 6.5C16.3 5.1 18.5 5.1 19.9 6.5C21.3 7.9 21.3 10.1 19.9 11.5L11.8 19.6C9.7 21.7 6.3 21.7 4.2 19.6C2.1 17.5 2.1 14.1 4.2 12L12.4 3.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                 </button>
-                <button type="button" class="tool-btn" tabindex="-1" aria-label="More">…</button>
+                <button type="button" class="tool-btn" data-format="link" aria-label="Link">🔗</button>
               </div>
               <small class="helper"><span id="descCount">0</span>/2000 characters</small>
               <small class="error" id="descriptionError"></small>

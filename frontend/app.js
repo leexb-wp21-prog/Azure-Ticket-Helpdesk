@@ -23,6 +23,8 @@ const attachmentInput = document.getElementById("attachment");
 const attachmentInfo = document.getElementById("attachmentInfo");
 const attachmentPreview = document.getElementById("attachmentPreview");
 const attachmentDropzone = document.getElementById("attachmentDropzone");
+const messageFromName = document.getElementById("messageFromName");
+const editorToolButtons = document.querySelectorAll(".message-toolbar .tool-btn[data-format]");
 const draftHint = document.getElementById("draftHint");
 const slaHint = document.getElementById("slaHint");
 const ticketsSkeleton = document.getElementById("ticketsSkeleton");
@@ -1013,6 +1015,69 @@ function validateAttachment() {
   return true;
 }
 
+function replaceSelection(textarea, replacer) {
+  if (!textarea) return;
+  const start = textarea.selectionStart ?? 0;
+  const end = textarea.selectionEnd ?? 0;
+  const original = textarea.value || "";
+  const selected = original.slice(start, end);
+  const { text, caretOffset } = replacer(selected);
+  textarea.value = `${original.slice(0, start)}${text}${original.slice(end)}`;
+  const nextCaret = typeof caretOffset === "number" ? start + caretOffset : start + text.length;
+  textarea.focus();
+  textarea.setSelectionRange(nextCaret, nextCaret);
+  descCount.textContent = String(textarea.value.length);
+  saveDraft();
+}
+
+function applyEditorAction(action) {
+  if (!desc) return;
+  if (action === "attach") {
+    attachmentInput?.click();
+    return;
+  }
+  if (action === "emoji") {
+    replaceSelection(desc, (selected) => ({
+      text: `${selected} 🙂`,
+    }));
+    return;
+  }
+  if (action === "bold") {
+    replaceSelection(desc, (selected) => {
+      const val = selected || "bold text";
+      return { text: `**${val}**`, caretOffset: selected ? undefined : 2 + val.length };
+    });
+    return;
+  }
+  if (action === "italic") {
+    replaceSelection(desc, (selected) => {
+      const val = selected || "italic text";
+      return { text: `*${val}*`, caretOffset: selected ? undefined : 1 + val.length };
+    });
+    return;
+  }
+  if (action === "strike") {
+    replaceSelection(desc, (selected) => {
+      const val = selected || "text";
+      return { text: `~~${val}~~`, caretOffset: selected ? undefined : 2 + val.length };
+    });
+    return;
+  }
+  if (action === "bullet") {
+    replaceSelection(desc, (selected) => {
+      const lines = (selected || "List item").split("\n").map((line) => `- ${line}`);
+      return { text: lines.join("\n") };
+    });
+    return;
+  }
+  if (action === "link") {
+    replaceSelection(desc, (selected) => {
+      const val = selected || "link text";
+      return { text: `[${val}](https://)`, caretOffset: 3 + val.length };
+    });
+  }
+}
+
 const knowledgeArticles = [
   { keywords: ["wifi", "wi-fi", "internet", "network"], title: "Campus Wi-Fi troubleshooting guide" },
   { keywords: ["aircond", "air conditioner", "facilities", "leak"], title: "Facilities issue report checklist" },
@@ -1221,6 +1286,14 @@ if (attachmentDropzone && attachmentInput) {
     }
   });
 }
+if (editorToolButtons?.length) {
+  editorToolButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const action = String(btn.dataset.format || "");
+      if (action) applyEditorAction(action);
+    });
+  });
+}
 if (form.priority) {
   form.priority.addEventListener("change", () => {
     slaHint.textContent = getSlaByPriority(form.priority.value);
@@ -1306,6 +1379,7 @@ function openCreateModal() {
   // Prefill requester identity from the signed-in session.
   if (form.name) form.name.value = session.name || form.name.value || "Portal User";
   if (form.email) form.email.value = session.email;
+  if (messageFromName) messageFromName.textContent = session.name || "Portal User";
 
   if (form.consent) form.consent.checked = true;
 
