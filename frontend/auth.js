@@ -29,11 +29,23 @@ function toDashboard() {
   window.location.href = "./index.html";
 }
 
+function handleMicrosoftAuth(roleValue) {
+  const role = normalizeRole(roleValue);
+  saveSession({
+    email: "microsoft.user@campus.edu",
+    role,
+    name: "Microsoft User",
+    prefs: { notifEmail: true, notifInApp: true },
+  });
+  toDashboard();
+}
+
 const loginForm = document.getElementById("loginPageForm");
 if (loginForm) {
   const emailEl = document.getElementById("loginEmail");
   const passwordEl = document.getElementById("loginPassword");
   const roleEl = document.getElementById("loginRole");
+  const loginMicrosoftBtn = document.getElementById("loginMicrosoftBtn");
   bindRolePreview(roleEl, document.getElementById("rolePreview"));
 
   loginForm.addEventListener("submit", (e) => {
@@ -63,6 +75,10 @@ if (loginForm) {
     });
     toDashboard();
   });
+
+  loginMicrosoftBtn?.addEventListener("click", () => {
+    handleMicrosoftAuth(roleEl?.value);
+  });
 }
 
 const registerForm = document.getElementById("registerPageForm");
@@ -71,6 +87,7 @@ if (registerForm) {
   const emailEl = document.getElementById("registerEmail");
   const passwordEl = document.getElementById("registerPassword");
   const roleEl = document.getElementById("registerRole");
+  const registerMicrosoftBtn = document.getElementById("registerMicrosoftBtn");
   bindRolePreview(roleEl, document.getElementById("rolePreview"));
 
   registerForm.addEventListener("submit", (e) => {
@@ -105,5 +122,9 @@ if (registerForm) {
       prefs: { notifEmail: true, notifInApp: true },
     });
     toDashboard();
+  });
+
+  registerMicrosoftBtn?.addEventListener("click", () => {
+    handleMicrosoftAuth(roleEl?.value);
   });
 }

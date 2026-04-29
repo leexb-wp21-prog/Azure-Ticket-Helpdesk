@@ -32,8 +32,6 @@ const prioritySegButtons = document.querySelectorAll(
 );
 
 const btnSignIn = document.getElementById("btnSignIn");
-const btnRegister = document.getElementById("btnRegister");
-const btnMicrosoftSSO = document.getElementById("btnMicrosoftSSO");
 const btnProfile = document.getElementById("btnProfile");
 const btnLogout = document.getElementById("btnLogout");
 
@@ -749,22 +747,11 @@ function updateHeaderAuthUi() {
   const signedIn = Boolean(session && session.email);
   const role = String(session?.role || "user").toLowerCase();
   document.body.dataset.role = ["user", "admin", "staff"].includes(role) ? role : "user";
-  if (signedIn) {
-    btnSignIn?.classList.add("hidden");
-    btnRegister?.classList.add("hidden");
-    btnMicrosoftSSO?.classList.add("hidden");
-    btnProfile?.classList.remove("hidden");
-    btnLogout?.classList.remove("hidden");
-    btnNotifications?.classList.remove("hidden");
-  } else {
-    btnSignIn?.classList.remove("hidden");
-    btnRegister?.classList.remove("hidden");
-    btnMicrosoftSSO?.classList.remove("hidden");
-    btnProfile?.classList.add("hidden");
-    btnLogout?.classList.add("hidden");
-    btnNotifications?.classList.add("hidden");
-    closeNotifDropdown();
-  }
+  btnSignIn?.classList.remove("hidden");
+  btnProfile?.classList.add("hidden");
+  btnLogout?.classList.add("hidden");
+  btnNotifications?.classList.remove("hidden");
+  if (!signedIn) closeNotifDropdown();
 }
 
 // -----------------------------

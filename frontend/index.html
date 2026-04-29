@@ -17,17 +17,19 @@
     <header class="app-header">
       <div class="brand">
         <p class="brand-kicker">IT Support Center</p>
-        <h1>QuickAid</h1>
+        <div class="brand-row">
+          <h1>QuickAid</h1>
+          <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
+        </div>
       </div>
       <p class="header-copy">
         School Technology Help Desk
       </p>
       <div class="header-actions">
-        <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
         <div class="notif-wrap">
           <button
             type="button"
-            class="notif-action hidden"
+            class="notif-action"
             id="btnNotifications"
             aria-haspopup="menu"
             aria-controls="notifDropdown"
@@ -67,19 +69,18 @@
             </div>
           </div>
         </div>
-        <a class="ghost-action auth-link" id="btnSignIn" href="./login.html">Sign In</a>
-        <a class="ghost-action auth-link" id="btnRegister" href="./register.html">Register</a>
-        <button type="button" class="ms-action" id="btnMicrosoftSSO">
-          Sign in with Microsoft
-        </button>
-        <button type="button" class="ghost-action hidden" id="btnProfile">Profile</button>
-        <button type="button" class="ghost-action hidden" id="btnLogout">Logout</button>
+        <a class="ghost-action auth-link" id="btnSignIn" href="./login.html">Login</a>
       </div>
     </header>
 
     <aside class="sidebar" aria-label="Main navigation">
       <div class="sidebar-brand">
-        <div class="sidebar-logo" aria-hidden="true">80</div>
+        <div class="sidebar-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L4 7V12C4 16.97 7.34 21.47 12 22C16.66 21.47 20 16.97 20 12V7L12 3Z" fill="currentColor" opacity="0.9" />
+            <path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
         <div class="sidebar-brand-text">
           <div class="sidebar-brand-title">TickIt</div>
           <div class="sidebar-brand-sub">AI-Forwarded Support</div>
