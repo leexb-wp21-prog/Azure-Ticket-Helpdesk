@@ -12,48 +12,71 @@
     />
     <link rel="stylesheet" href="./auth.css" />
   </head>
-  <body>
-    <main class="auth-layout">
-      <section class="auth-hero">
-        <p class="auth-kicker">QuickAid Onboarding</p>
-        <h1>Create account</h1>
-        <p>Register as user, admin, or staff and get a matching workspace design style.</p>
-        <div class="role-preview" id="rolePreview" data-role="user">
-          <p class="role-title">User Theme</p>
-          <p class="role-copy">Blue support dashboard with simple ticket tracking focus.</p>
-        </div>
-      </section>
-      <section class="auth-panel">
+  <body class="auth-page register-page">
+    <main class="entra-layout">
+      <section class="entra-panel">
+        <h1>Create account ✨</h1>
+        <p class="entra-subtitle">Register manually or continue with Microsoft Entra ID.</p>
         <form id="registerPageForm" novalidate>
-          <label>
+          <label class="input-shell">
             <span>Full name</span>
-            <input id="registerName" type="text" placeholder="Your name" required />
+            <input id="registerName" type="text" placeholder="Your name" required autocomplete="name" />
             <small class="error" id="registerNameError"></small>
           </label>
-          <label>
+          <label class="input-shell">
             <span>Email</span>
-            <input id="registerEmail" type="email" placeholder="you@campus.edu" required />
+            <input id="registerEmail" type="email" placeholder="you@campus.edu" required autocomplete="email" />
             <small class="error" id="registerEmailError"></small>
           </label>
-          <label>
+          <label class="input-shell">
             <span>Password</span>
-            <input id="registerPassword" type="password" placeholder="Create password" required />
+            <input id="registerPassword" type="password" placeholder="Create password" required autocomplete="new-password" />
             <small class="error" id="registerPasswordError"></small>
           </label>
-          <label>
-            <span>Role</span>
-            <select id="registerRole">
-              <option value="user" selected>User</option>
-              <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
-            </select>
-          </label>
-          <button type="submit">Register</button>
-          <button type="button" id="registerMicrosoftBtn">Register with Microsoft</button>
+
+          <button type="submit" class="signin-btn">Register</button>
+
+          <div class="or-divider"><span>Or</span></div>
+
+          <button type="button" id="registerMicrosoftBtn" class="entra-btn">
+            <img class="entra-logo" src="./assets/Microsoft_Entra_ID_color_icon.png" alt="" aria-hidden="true" />
+            <span>Sign In with Microsoft Entra ID</span>
+          </button>
         </form>
         <div class="auth-links">
           <a href="./login.html">Go to login</a>
           <a href="./index.html">Back to dashboard</a>
+        </div>
+      </section>
+      <section class="entra-hero" aria-hidden="true">
+        <div class="hero-orb"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-bear-card">
+          <div class="bear" id="registerBear">
+            <div class="ear left"></div>
+            <div class="ear right"></div>
+            <div class="face">
+              <div class="eye left">
+                <span class="pupil" id="registerLeftEye"></span>
+                <span class="lid"></span>
+              </div>
+              <div class="eye right">
+                <span class="pupil" id="registerRightEye"></span>
+                <span class="lid"></span>
+              </div>
+              <div class="cheek left"></div>
+              <div class="cheek right"></div>
+              <div class="mouth-area">
+                <div class="nose"></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+            <div class="hand left"></div>
+            <div class="hand right"></div>
+          </div>
+          <h2>Create your account</h2>
+          <p>Register and start using QuickAid.</p>
         </div>
       </section>
     </main>

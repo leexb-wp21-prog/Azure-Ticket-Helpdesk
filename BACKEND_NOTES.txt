@@ -83,3 +83,127 @@ Backend-ready cleanup:
 - Provide stable enum values for status and priority.
 - Include comments/timeline in ticket detail response if available.
 
+
+7) Admin Module (Backend-Ready Contract)
+----------------------------------------
+Admin frontend now uses backend-ready fetch flow with fallback mock data.
+
+Global config (same pattern as user dashboard):
+- window.QUICKAID_API_BASE = "https://<your-api-host>"
+
+Current admin frontend endpoints (planned):
+1. GET /api/admin/overview?range={today|week|month|year}
+   Expected shape:
+   {
+     "metrics": {
+       "totalTickets": number,
+       "open": number,
+       "inProgress": number,
+       "resolved": number
+     },
+     "categoryDistribution": [
+       { "label": string, "value": number }
+     ],
+     "priorityDistribution": [
+       { "label": "High|Medium|Low", "percent": number, "className": "high|medium|low" }
+     ],
+     "weeklyTrend": {
+       "created": [number, number, number, number, number, number, number],
+       "resolved": [number, number, number, number, number, number, number]
+     },
+     "tickets": [
+       {
+         "ticketId": string,
+         "user": string,
+         "issue": string,
+         "category": string,
+         "priority": "High|Medium|Low",
+         "status": string,
+         "assignedTeam": string
+       }
+     ]
+   }
+
+2. GET /api/admin/tickets?range={today|week|month|year}
+   Expected shape:
+   {
+     "tickets": [
+       {
+         "ticketId": string,
+         "issue": string,
+         "priority": "High|Medium|Low",
+         "status": string,
+         "assignedTeam": string
+       }
+     ]
+   }
+
+3. GET /api/admin/analytics?range={today|week|month|year}
+   Expected shape:
+   {
+     "summary": {
+       "new": number,
+       "complete": number,
+       "agents": number,
+       "users": number,
+       "tickets": number
+     },
+     "cards": [
+       { "title": string, "copy": string }
+     ]
+   }
+
+4. GET /api/admin/support_teams?range={today|week|month|year}
+   Expected shape:
+   {
+     "teams": [
+       {
+         "name": string,
+         "activeAgents": number,
+         "scope": string
+       }
+     ]
+   }
+
+Frontend behavior now:
+- Uses mock data first for reliable local preview.
+- Automatically switches to backend responses when API_BASE is configured and endpoints respond successfully.
+- Range switch (Today/Week/Month/Year) re-fetches all admin module data.
+
+
+8) Admin Overview Interactive Table (Current Temporary Behavior)
+----------------------------------------------------------------
+Overview table now intentionally supports interactive controls with temporary frontend-only logic:
+- `Status` is a dropdown (Open / In Progress / Resolved)
+- `Assigned Team` is a dropdown
+- `View` button is clickable (temporary alert preview)
+
+Temporary behavior in code:
+- Updates local in-memory row state only
+- Recalculates overview metrics instantly after status changes
+- Does not persist to backend yet
+
+Code markers for backend handover:
+- `TODO_BACKEND_REAL_DATA` in `frontend/admin.js`
+
+Recommended backend endpoints for this table:
+1. PATCH /api/admin/tickets/{ticketId}/status
+   Request: { "status": "Open|In Progress|Resolved" }
+   Response: updated ticket object
+
+2. PATCH /api/admin/tickets/{ticketId}/assignment
+   Request: { "assignedTeam": "<team_name>" }
+   Response: updated ticket object
+
+3. GET /api/admin/tickets/{ticketId}
+   Used by `View` action for real ticket detail screen/modal.
+
+Admin overview latest behavior update:
+- `View` now opens a real ticket detail modal in frontend (no browser alert).
+- `Status` and `Assigned Team` dropdown values are committed only when admin clicks `Update`.
+- `Update` currently persists to temporary frontend state immediately, then attempts backend PATCH if API is available.
+
+Backend team action:
+- Return consistent `ticketId` in admin endpoints so PATCH routes can map rows reliably.
+- Add ticket detail payload enrichment for modal (requester contact, timestamps, notes, SLA fields) when ready.
+

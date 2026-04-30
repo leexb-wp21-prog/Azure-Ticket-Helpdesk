@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickAid Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <p class="brand-kicker">QuickAid</p>
+        <h1>Admin Panel</h1>
+      </div>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <a href="#overview" class="admin-nav-link active" data-page-link="overview">Overview</a>
+        <a href="#manage-tickets" class="admin-nav-link" data-page-link="manage-tickets">Manage Tickets</a>
+        <a href="#analytics-report" class="admin-nav-link" data-page-link="analytics-report">Analytics and Report</a>
+        <a href="#support-teams" class="admin-nav-link" data-page-link="support-teams">Support Teams</a>
+      </nav>
+      <div class="admin-sidebar-actions">
+        <a class="ghost-link" href="./index.html">Back to portal</a>
+        <button id="adminLogoutBtn" type="button" class="danger-btn">Log Out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div>
+          <p class="meta">Today</p>
+          <h2>Admin&rsquo;s Dashboard</h2>
+          <p class="sub" id="adminSessionLabel">Signed in as admin</p>
+        </div>
+        <div class="range-tabs" role="tablist" aria-label="Date range">
+          <button type="button" class="range-tab active" data-range="today">Today</button>
+          <button type="button" class="range-tab" data-range="week">This Week</button>
+          <button type="button" class="range-tab" data-range="month">This Month</button>
+          <button type="button" class="range-tab" data-range="year">This Year</button>
+        </div>
+      </header>
+
+      <section id="overview" class="admin-page active" aria-labelledby="overviewTitle">
+        <article class="section-block" aria-labelledby="overviewTitle">
+          <div class="section-head">
+            <h3 id="overviewTitle">Overview</h3>
+          </div>
+
+          <div class="stats-grid four-col">
+            <article class="stat-card">
+              <p class="label">Total Tickets</p>
+              <p class="value" id="overviewTotalTickets">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Open</p>
+              <p class="value" id="overviewOpenTickets">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">In Progress</p>
+              <p class="value" id="overviewInProgressTickets">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Resolved</p>
+              <p class="value" id="overviewResolvedTickets">0</p>
+            </article>
+          </div>
+
+          <div class="overview-chart-grid">
+            <article class="analytic-card">
+              <h4>Tickets by Category</h4>
+              <div class="bar-chart-shell" aria-hidden="true">
+                <div class="bar-chart-y-axis" id="overviewCategoryYAxis"></div>
+                <div class="bar-chart-main">
+                  <div class="mini-bars" id="overviewCategoryBars"></div>
+                  <div class="bar-chart-x-axis" id="overviewCategoryXAxis"></div>
+                </div>
+              </div>
+            </article>
+            <article class="analytic-card">
+              <h4>Priority Distribution</h4>
+              <div class="pie-wrap" aria-hidden="true">
+                <div class="pie-chart" id="overviewPriorityPie"></div>
+                <div class="pie-legend" id="overviewPriorityLegend">
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <article class="analytic-card full-width">
+            <h4>Weekly Ticket Trends</h4>
+            <div class="line-chart" aria-hidden="true">
+              <svg viewBox="0 0 800 210" role="presentation" id="overviewTrendSvg">
+                <polyline points="" class="line-created" id="overviewCreatedLine" />
+                <polyline points="" class="line-resolved" id="overviewResolvedLine" />
+              </svg>
+            </div>
+          </article>
+        </article>
+
+        <article class="section-block" aria-labelledby="overviewTicketsTitle">
+          <div class="section-head">
+            <h3 id="overviewTicketsTitle">All Tickets</h3>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>User</th>
+                  <th>Issue</th>
+                  <th>Category</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Assigned Team</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="overviewTicketsBody">
+                <tr>
+                  <td colspan="8">Loading tickets...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="manage-tickets" class="admin-page" aria-labelledby="manageTitle">
+        <article class="section-block">
+          <div class="section-head">
+            <h3 id="manageTitle">Manage Tickets</h3>
+            <button class="primary-btn" type="button">Bulk Assign</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Issue</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Assigned Team</th>
+                </tr>
+              </thead>
+              <tbody id="manageTicketsBody">
+                <tr>
+                  <td colspan="5">Loading manage tickets...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="analytics-report" class="admin-page" aria-labelledby="analyticsTitle">
+        <article class="section-block">
+          <div class="section-head">
+            <h3 id="analyticsTitle">Analytics and Report</h3>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card">
+              <p class="label">New</p>
+              <p class="value" id="analyticsNewCount">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Complete</p>
+              <p class="value" id="analyticsCompleteCount">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Agents</p>
+              <p class="value" id="analyticsAgentsCount">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Users</p>
+              <p class="value" id="analyticsUsersCount">0</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Tickets</p>
+              <p class="value" id="analyticsTicketsCount">0</p>
+            </article>
+          </div>
+          <div class="analytics-grid" id="analyticsCards">
+          </div>
+        </article>
+      </section>
+
+      <section id="support-teams" class="admin-page" aria-labelledby="teamsTitle">
+        <article class="section-block">
+          <div class="section-head">
+            <h3 id="teamsTitle">Support Teams</h3>
+          </div>
+          <div class="team-grid" id="supportTeamsGrid">
+            <article class="team-card">Loading support teams...</article>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div id="adminTicketModal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adminTicketModalTitle">
+      <div class="admin-modal-backdrop" data-close-admin-modal="true"></div>
+      <div class="admin-modal-card" role="document">
+        <div class="admin-modal-head">
+          <h3 id="adminTicketModalTitle">Ticket Details</h3>
+          <button type="button" class="admin-modal-close" data-close-admin-modal="true" aria-label="Close">×</button>
+        </div>
+        <div class="admin-modal-content" id="adminTicketModalContent"></div>
+      </div>
+    </div>
+
+    <script src="./admin.js" defer></script>
+  </body>
+</html>

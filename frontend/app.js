@@ -43,6 +43,7 @@ const prioritySegButtons = document.querySelectorAll(
 const btnSignIn = document.getElementById("btnSignIn");
 const btnProfile = document.getElementById("btnProfile");
 const btnLogout = document.getElementById("btnLogout");
+const btnAdminPanel = document.getElementById("btnAdminPanel");
 
 const btnInlineViewDetailPage = document.getElementById("btnInlineViewDetailPage");
 const ticketInlinePanel = document.getElementById("ticketInlinePanel");
@@ -694,11 +695,13 @@ function updateHeaderAuthUi() {
   const session = loadSession();
   const signedIn = Boolean(session && session.email);
   const role = String(session?.role || "user").toLowerCase();
+  const isAdmin = signedIn && role === "admin";
   document.body.dataset.role = ["user", "admin", "staff"].includes(role) ? role : "user";
   btnSignIn?.classList.remove("hidden");
   btnProfile?.classList.add("hidden");
   btnLogout?.classList.add("hidden");
   btnNotifications?.classList.remove("hidden");
+  btnAdminPanel?.classList.toggle("hidden", !isAdmin);
   if (!signedIn) closeNotifDropdown();
 }
 
@@ -1428,6 +1431,9 @@ setInterval(updateVisibleSlaCountdown, 60 * 1000);
 updateHeaderAuthUi();
 
 const bootSession = loadSession();
+if (bootSession?.role && String(bootSession.role).toLowerCase() === "admin") {
+  window.location.replace("./admin.html");
+}
 if (bootSession?.email) {
   seedDemoTickets(bootSession.email);
   (async () => {

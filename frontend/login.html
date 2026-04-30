@@ -12,43 +12,70 @@
     />
     <link rel="stylesheet" href="./auth.css" />
   </head>
-  <body>
-    <main class="auth-layout">
-      <section class="auth-hero">
-        <p class="auth-kicker">QuickAid Access</p>
-        <h1>Sign in</h1>
-        <p>Choose your role to preview role-based design theme before entering dashboard.</p>
-        <div class="role-preview" id="rolePreview" data-role="user">
-          <p class="role-title">User Theme</p>
-          <p class="role-copy">Blue support dashboard with simple ticket tracking focus.</p>
-        </div>
-      </section>
-      <section class="auth-panel">
+  <body class="auth-page login-page">
+    <main class="entra-layout">
+      <section class="entra-panel">
+        <h1>Welcome back 👋</h1>
+        <p class="entra-subtitle">Manual sign in or continue with Microsoft Entra ID.</p>
+
         <form id="loginPageForm" novalidate>
-          <label>
-            <span>Email</span>
-            <input id="loginEmail" type="email" placeholder="you@campus.edu" required />
-            <small class="error" id="loginEmailError"></small>
+          <label class="input-shell">
+            <span>Username</span>
+            <input id="loginUsername" type="text" placeholder="Enter your username" required autocomplete="username" />
+            <small class="error" id="loginUsernameError"></small>
           </label>
-          <label>
+
+          <label class="input-shell">
             <span>Password</span>
-            <input id="loginPassword" type="password" placeholder="Enter password" required />
+            <input id="loginPassword" type="password" placeholder="Enter your password" required autocomplete="current-password" />
             <small class="error" id="loginPasswordError"></small>
           </label>
-          <label>
-            <span>Role</span>
-            <select id="loginRole">
-              <option value="user" selected>User</option>
-              <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
-            </select>
-          </label>
-          <button type="submit">Login</button>
-          <button type="button" id="loginMicrosoftBtn">Login with Microsoft</button>
+
+          <button type="submit" class="signin-btn">Sign In</button>
+
+          <div class="or-divider"><span>Or</span></div>
+
+          <button type="button" id="loginMicrosoftBtn" class="entra-btn">
+            <img class="entra-logo" src="./assets/Microsoft_Entra_ID_color_icon.png" alt="" aria-hidden="true" />
+            <span>Sign In with Microsoft Entra ID</span>
+          </button>
         </form>
+
         <div class="auth-links">
           <a href="./register.html">Go to register</a>
           <a href="./index.html">Back to dashboard</a>
+        </div>
+      </section>
+
+      <section class="entra-hero" aria-hidden="true">
+        <div class="hero-orb"></div>
+        <div class="hero-orb hero-orb-2"></div>
+        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-bear-card">
+          <div class="bear" id="loginBear">
+            <div class="ear left"></div>
+            <div class="ear right"></div>
+            <div class="face">
+              <div class="eye left">
+                <span class="pupil" id="loginLeftEye"></span>
+                <span class="lid"></span>
+              </div>
+              <div class="eye right">
+                <span class="pupil" id="loginRightEye"></span>
+                <span class="lid"></span>
+              </div>
+              <div class="cheek left"></div>
+              <div class="cheek right"></div>
+              <div class="mouth-area">
+                <div class="nose"></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+            <div class="hand left"></div>
+            <div class="hand right"></div>
+          </div>
+          <h2>Welcome back</h2>
+          <p>Sign in to continue to your portal.</p>
         </div>
       </section>
     </main>
