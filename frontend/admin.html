@@ -94,10 +94,7 @@
           <article class="analytic-card full-width">
             <h4>Weekly Ticket Trends</h4>
             <div class="line-chart" aria-hidden="true">
-              <svg viewBox="0 0 900 230" role="presentation" id="overviewTrendSvg">
-                <polyline points="" class="line-created" id="overviewCreatedLine" />
-                <polyline points="" class="line-resolved" id="overviewResolvedLine" />
-              </svg>
+              <canvas id="overviewTrendCanvas" aria-label="Weekly ticket trends line chart"></canvas>
             </div>
           </article>
         </article>
@@ -212,6 +209,7 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="./admin.js" defer></script>
   </body>
 </html>

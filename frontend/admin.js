@@ -177,6 +177,7 @@ const mockAdminData = {
 let activeRange = "today";
 let overviewTicketsState = [];
 let updateToastTimer = null;
+let overviewTrendChart = null;
 
 function resolveApiUrl(path) {
   if (!API_BASE) return path;
@@ -338,6 +339,100 @@ function formatPercent(value, total) {
   return `${Math.round((value / total) * 100)}%`;
 }
 
+function renderOverviewTrendChart(createdValues, resolvedValues) {
+  const canvas = document.getElementById("overviewTrendCanvas");
+  if (!(canvas instanceof HTMLCanvasElement)) return;
+  if (typeof window.Chart === "undefined") return;
+
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  if (overviewTrendChart) {
+    overviewTrendChart.destroy();
+    overviewTrendChart = null;
+  }
+
+  const tooltipStyle = {
+    backgroundColor: "#fff",
+    borderColor: "#d5dee8",
+    borderWidth: 1,
+    titleColor: "#24303d",
+    bodyColor: "#24303d",
+    titleFont: { size: 13, weight: "600" },
+    bodyFont: { size: 12 },
+    padding: 10,
+    displayColors: false,
+  };
+
+  overviewTrendChart = new window.Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Created",
+          data: createdValues,
+          borderColor: "#3b82f6",
+          backgroundColor: "#3b82f6",
+          borderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointHitRadius: 18,
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          cubicInterpolationMode: "monotone",
+          tension: 0.36,
+        },
+        {
+          label: "Resolved",
+          data: resolvedValues,
+          borderColor: "#22c55e",
+          backgroundColor: "#22c55e",
+          borderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointHitRadius: 18,
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          cubicInterpolationMode: "monotone",
+          tension: 0.36,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 1200,
+        easing: "easeOutCubic",
+      },
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tooltipStyle,
+          callbacks: {
+            title: (items) => items?.[0]?.label || "",
+            label: (context) => `${context.dataset.label} : ${context.formattedValue}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280", font: { size: 12 } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: "#e5e7eb", borderDash: [2, 4] },
+          ticks: { color: "#6b7280", font: { size: 12 }, precision: 0 },
+        },
+      },
+    },
+  });
+}
+
 function animateOverviewCharts() {
   const bars = document.querySelectorAll("#overviewCategoryBars .mini-bar");
   bars.forEach((bar, index) => {
@@ -355,30 +450,7 @@ function animateOverviewCharts() {
     pie.classList.add("flow-spin");
   }
 
-  const lines = [
-    document.getElementById("overviewCreatedLine"),
-    document.getElementById("overviewResolvedLine"),
-  ].filter(Boolean);
-
-  lines.forEach((line, idx) => {
-    if (!(line instanceof SVGGeometryElement)) return;
-    const length = line.getTotalLength();
-    line.style.strokeDasharray = `${length}`;
-    line.style.strokeDashoffset = `${length}`;
-    line.style.transition = "none";
-    void line.getBoundingClientRect();
-    const delay = 260 + idx * 260;
-    line.style.transition = `stroke-dashoffset 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`;
-    line.style.strokeDashoffset = "0";
-  });
-
-  const points = document.querySelectorAll("#overviewTrendSvg .trend-point");
-  points.forEach((point, index) => {
-    point.classList.remove("flow-pop");
-    point.setAttribute("style", `animation-delay:${760 + index * 44}ms`);
-    void point.getBoundingClientRect();
-    point.classList.add("flow-pop");
-  });
+  // Weekly trend now uses Chart.js canvas animation.
 }
 
 function renderOverview(overviewData) {
@@ -458,80 +530,10 @@ function renderOverview(overviewData) {
     bindPieHoverTooltip(priorityPie, priorities, Number(metrics.totalTickets || 0));
   }
 
-  const createdLine = document.getElementById("overviewCreatedLine");
-  const resolvedLine = document.getElementById("overviewResolvedLine");
-  const trendSvg = document.getElementById("overviewTrendSvg");
   const trend = overviewData?.weeklyTrend || {};
   const createdValues = Array.isArray(trend.created) ? trend.created : [0, 0, 0, 0, 0, 0, 0];
   const resolvedValues = Array.isArray(trend.resolved) ? trend.resolved : [0, 0, 0, 0, 0, 0, 0];
-  const trendMax = Math.max(...createdValues, ...resolvedValues, 1);
-  const axisLeft = 20;
-  const axisRight = 860;
-  const plotStartX = axisLeft + 16;
-  const chartPlotWidth = axisRight - plotStartX;
-  const createdCoords = buildLineCoordinates(createdValues, 180, chartPlotWidth, trendMax, plotStartX);
-  const resolvedCoords = buildLineCoordinates(resolvedValues, 180, chartPlotWidth, trendMax, plotStartX);
-  if (createdLine) createdLine.setAttribute("points", buildPolylinePointsFromCoordinates(createdCoords));
-  if (resolvedLine) resolvedLine.setAttribute("points", buildPolylinePointsFromCoordinates(resolvedCoords));
-
-  if (trendSvg) {
-    trendSvg
-      .querySelectorAll(".trend-point, .trend-hit, .trend-axis, .trend-grid, .trend-label")
-      .forEach((point) => point.remove());
-    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const appendSvg = (name, attrs = {}, className = "") => {
-      const node = document.createElementNS("http://www.w3.org/2000/svg", name);
-      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
-      if (className) node.setAttribute("class", className);
-      trendSvg.appendChild(node);
-      return node;
-    };
-
-    const axisTop = 20;
-    const axisBottom = 200;
-    appendSvg("line", { x1: axisLeft, y1: axisTop, x2: axisLeft, y2: axisBottom }, "trend-axis");
-    appendSvg("line", { x1: axisLeft, y1: axisBottom, x2: axisRight, y2: axisBottom }, "trend-axis");
-    for (let i = 0; i <= 4; i += 1) {
-      const y = axisBottom - ((axisBottom - axisTop) / 4) * i;
-      const value = Math.round((trendMax / 4) * i);
-      appendSvg("line", { x1: axisLeft, y1: y, x2: axisRight, y2: y }, "trend-grid");
-      const text = appendSvg("text", { x: 14, y: y + 4 }, "trend-label y");
-      text.textContent = String(value);
-    }
-    createdCoords.forEach((coord, idx) => {
-      const xLabel = appendSvg("text", { x: coord.x, y: 208 }, "trend-label x");
-      xLabel.textContent = labels[idx] || `Day ${idx + 1}`;
-    });
-
-    createdCoords.forEach((coord, idx) => {
-      const hit = appendSvg(
-        "circle",
-        { cx: coord.x, cy: coord.y, r: 13 },
-        "trend-hit"
-      );
-      appendSvg("circle", { cx: coord.x, cy: coord.y, r: 5 }, "trend-point created");
-      bindHoverTooltip(hit, () => {
-        const resolved = Number(resolvedValues[idx] || 0);
-        return `${labels[idx] || `Day ${idx + 1}`}<br/><span class="line-created-text">Created : ${
-          coord.value
-        }</span><br/><span class="line-resolved-text">Resolved : ${resolved}</span>`;
-      }, "line");
-    });
-    resolvedCoords.forEach((coord, idx) => {
-      const hit = appendSvg(
-        "circle",
-        { cx: coord.x, cy: coord.y, r: 13 },
-        "trend-hit"
-      );
-      appendSvg("circle", { cx: coord.x, cy: coord.y, r: 5 }, "trend-point resolved");
-      bindHoverTooltip(hit, () => {
-        const created = Number(createdValues[idx] || 0);
-        return `${labels[idx] || `Day ${idx + 1}`}<br/><span class="line-created-text">Created : ${
-          created
-        }</span><br/><span class="line-resolved-text">Resolved : ${coord.value}</span>`;
-      }, "line");
-    });
-  }
+  renderOverviewTrendChart(createdValues, resolvedValues);
 
   const ticketsBody = document.getElementById("overviewTicketsBody");
   if (ticketsBody) {

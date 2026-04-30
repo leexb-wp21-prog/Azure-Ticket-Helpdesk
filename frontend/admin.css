@@ -348,18 +348,20 @@ body {
 .admin-update-toast {
   position: fixed;
   left: 50%;
-  top: 50%;
+  top: 1rem;
   z-index: 160;
-  width: min(560px, calc(100vw - 2rem));
-  background: #0f172a;
-  color: #fff;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  padding: 0.7rem 0.85rem;
-  box-shadow: 0 16px 36px rgba(2, 8, 23, 0.3);
+  width: fit-content;
+  max-width: min(560px, calc(100vw - 2rem));
+  background: rgba(15, 23, 42, 0.94);
+  color: #f8fafc;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  padding: 0.65rem 1rem;
+  box-shadow: 0 14px 32px rgba(2, 8, 23, 0.26);
+  backdrop-filter: blur(6px);
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.96);
-  transition: opacity 160ms ease, transform 160ms ease;
+  transform: translate(-50%, -8px) scale(0.98);
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 
 .admin-update-toast[data-tone="success"] {
@@ -384,7 +386,7 @@ body {
 
 .admin-update-toast.show {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, 0) scale(1);
 }
 
 .admin-update-toast.hidden {
@@ -595,6 +597,12 @@ th {
   width: 100%;
   height: 210px;
   display: block;
+}
+
+#overviewTrendCanvas {
+  display: block;
+  width: 100% !important;
+  height: 230px !important;
 }
 
 .line-created,
