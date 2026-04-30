@@ -483,10 +483,15 @@ th {
   border-radius: 0.45rem 0.45rem 0 0;
   background: #111827;
   cursor: pointer;
+  transform-origin: bottom;
 }
 
 .mini-bars .mini-bar:hover {
   filter: brightness(1.1);
+}
+
+.mini-bars .mini-bar.flow-rise {
+  animation: barFlowRise 980ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .bar-chart-shell {
@@ -549,6 +554,10 @@ th {
   box-shadow: 0 4px 16px rgba(36, 52, 70, 0.12);
 }
 
+.pie-chart.flow-spin {
+  animation: pieFlowSpin 1200ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
 .pie-legend p {
   margin: 0.3rem 0;
   color: var(--text-muted);
@@ -584,7 +593,7 @@ th {
 
 .line-chart svg {
   width: 100%;
-  height: 180px;
+  height: 210px;
   display: block;
 }
 
@@ -621,6 +630,10 @@ th {
 
 .trend-point:hover {
   transform: scale(1.12);
+}
+
+.trend-point.flow-pop {
+  animation: pointFlowPop 700ms ease both;
 }
 
 .trend-hit {
@@ -687,6 +700,39 @@ th {
 
 .chart-hover-tooltip .line-resolved-text {
   color: #22c55e;
+}
+
+@keyframes barFlowRise {
+  0% {
+    transform: scaleY(0.2);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pieFlowSpin {
+  0% {
+    transform: scale(0.92) rotate(-18deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pointFlowPop {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .team-card small {

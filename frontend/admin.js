@@ -251,12 +251,12 @@ function setText(id, value) {
   if (el) el.textContent = String(value ?? "");
 }
 
-function buildLineCoordinates(values, height = 180, width = 700, maxValue = 1) {
+function buildLineCoordinates(values, height = 180, width = 700, maxValue = 1, startX = 20) {
   const safeValues = Array.isArray(values) && values.length ? values : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(maxValue, 1);
   const stepX = width / Math.max(safeValues.length - 1, 1);
   return safeValues.map((value, index) => {
-    const x = 20 + index * stepX;
+    const x = startX + index * stepX;
     const y = 20 + height - (Number(value || 0) / max) * height;
     return { x: Math.round(x), y: Math.round(y), value: Number(value || 0), index };
   });
@@ -336,6 +336,49 @@ function bindPieHoverTooltip(pieElement, priorities, totalTickets) {
 function formatPercent(value, total) {
   if (!total) return "0%";
   return `${Math.round((value / total) * 100)}%`;
+}
+
+function animateOverviewCharts() {
+  const bars = document.querySelectorAll("#overviewCategoryBars .mini-bar");
+  bars.forEach((bar, index) => {
+    bar.style.animationDelay = `${index * 90}ms`;
+    bar.classList.remove("flow-rise");
+    // force restart
+    void bar.offsetWidth;
+    bar.classList.add("flow-rise");
+  });
+
+  const pie = document.getElementById("overviewPriorityPie");
+  if (pie) {
+    pie.classList.remove("flow-spin");
+    void pie.offsetWidth;
+    pie.classList.add("flow-spin");
+  }
+
+  const lines = [
+    document.getElementById("overviewCreatedLine"),
+    document.getElementById("overviewResolvedLine"),
+  ].filter(Boolean);
+
+  lines.forEach((line, idx) => {
+    if (!(line instanceof SVGGeometryElement)) return;
+    const length = line.getTotalLength();
+    line.style.strokeDasharray = `${length}`;
+    line.style.strokeDashoffset = `${length}`;
+    line.style.transition = "none";
+    void line.getBoundingClientRect();
+    const delay = 260 + idx * 260;
+    line.style.transition = `stroke-dashoffset 1400ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`;
+    line.style.strokeDashoffset = "0";
+  });
+
+  const points = document.querySelectorAll("#overviewTrendSvg .trend-point");
+  points.forEach((point, index) => {
+    point.classList.remove("flow-pop");
+    point.setAttribute("style", `animation-delay:${760 + index * 44}ms`);
+    void point.getBoundingClientRect();
+    point.classList.add("flow-pop");
+  });
 }
 
 function renderOverview(overviewData) {
@@ -423,10 +466,11 @@ function renderOverview(overviewData) {
   const resolvedValues = Array.isArray(trend.resolved) ? trend.resolved : [0, 0, 0, 0, 0, 0, 0];
   const trendMax = Math.max(...createdValues, ...resolvedValues, 1);
   const axisLeft = 20;
-  const axisRight = 780;
-  const chartPlotWidth = axisRight - axisLeft;
-  const createdCoords = buildLineCoordinates(createdValues, 180, chartPlotWidth, trendMax);
-  const resolvedCoords = buildLineCoordinates(resolvedValues, 180, chartPlotWidth, trendMax);
+  const axisRight = 860;
+  const plotStartX = axisLeft + 16;
+  const chartPlotWidth = axisRight - plotStartX;
+  const createdCoords = buildLineCoordinates(createdValues, 180, chartPlotWidth, trendMax, plotStartX);
+  const resolvedCoords = buildLineCoordinates(resolvedValues, 180, chartPlotWidth, trendMax, plotStartX);
   if (createdLine) createdLine.setAttribute("points", buildPolylinePointsFromCoordinates(createdCoords));
   if (resolvedLine) resolvedLine.setAttribute("points", buildPolylinePointsFromCoordinates(resolvedCoords));
 
@@ -541,6 +585,8 @@ function renderOverview(overviewData) {
       )
       .join("");
   }
+
+  animateOverviewCharts();
 }
 
 function recalculateOverviewMetrics() {
