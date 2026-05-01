@@ -1,8 +1,40 @@
 const sessionKey = "quickaid-session-v1";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const accountsStorageKey = "quickaid-accounts-v1";
+const accessRequestsStorageKey = "quickaid-access-requests-v1";
 
 function saveSession(session) {
   localStorage.setItem(sessionKey, JSON.stringify(session));
+}
+
+function loadAccounts() {
+  try {
+    const raw = localStorage.getItem(accountsStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem(accountsStorageKey, JSON.stringify(Array.isArray(accounts) ? accounts : []));
+}
+
+function loadAccessRequests() {
+  try {
+    const raw = localStorage.getItem(accessRequestsStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAccessRequests(requests) {
+  localStorage.setItem(accessRequestsStorageKey, JSON.stringify(Array.isArray(requests) ? requests : []));
 }
 
 function setError(id, message) {
@@ -42,6 +74,43 @@ function bindRolePreview(selectEl, previewEl) {
 function toDashboard(session) {
   const role = normalizeRole(session?.role);
   window.location.href = role === "admin" ? "./admin.html" : "./index.html";
+}
+
+function createAccessRequestFromAccount(account) {
+  return {
+    teamId: "technical",
+    requester: account.name || "Requester",
+    email: account.email,
+    department: "General",
+    role: account.role === "admin" ? "Admin" : "Staff",
+    status: "pending",
+    date: new Date().toLocaleString(),
+    created_at: new Date().toISOString(),
+  };
+}
+
+function upsertAccountRecord(payload) {
+  const accounts = loadAccounts();
+  const email = normalizeEmail(payload.email);
+  const role = normalizeRole(payload.role);
+  const idx = accounts.findIndex((item) => normalizeEmail(item.email) === email);
+  const existing = idx >= 0 ? accounts[idx] : null;
+  const next = {
+    email,
+    name: String(payload.name || existing?.name || "Portal User"),
+    role,
+    password: String(payload.password || existing?.password || ""),
+    approvalStatus:
+      role === "staff" || role === "admin"
+        ? (payload.approvalStatus || existing?.approvalStatus || "pending")
+        : "approved",
+    updated_at: new Date().toISOString(),
+    created_at: existing?.created_at || new Date().toISOString(),
+  };
+  if (idx >= 0) accounts[idx] = next;
+  else accounts.push(next);
+  saveAccounts(accounts);
+  return next;
 }
 
 function handleMicrosoftAuth(roleValue, emailValue = "microsoft.user@campus.edu") {
@@ -162,10 +231,26 @@ if (loginForm) {
 
     const email = username.includes("@") ? username : `${username}@campus.edu`;
 
+    const accounts = loadAccounts();
+    const existing = accounts.find((item) => normalizeEmail(item.email) === normalizeEmail(email));
+    const resolvedRole = existing?.role || resolveRoleFromEmail(email, "user");
+    if (
+      (resolvedRole === "staff" || resolvedRole === "admin") &&
+      String(existing?.approvalStatus || "pending") !== "approved"
+    ) {
+      const status = String(existing?.approvalStatus || "pending").toLowerCase();
+      setError(
+        "loginUsernameError",
+        status === "rejected"
+          ? "Your access request was rejected. Please contact admin."
+          : "Your account is pending approval. Please wait for admin approval."
+      );
+      return;
+    }
     const session = {
       email,
-      role: resolveRoleFromEmail(email, "user"),
-      name: username || "Portal User",
+      role: resolvedRole,
+      name: existing?.name || username || "Portal User",
       prefs: { notifEmail: true, notifInApp: true },
     };
     saveSession(session);
@@ -194,6 +279,8 @@ if (registerForm) {
   const nameEl = document.getElementById("registerName");
   const emailEl = document.getElementById("registerEmail");
   const passwordEl = document.getElementById("registerPassword");
+  const roleEl = document.getElementById("registerRole");
+  const approvalNoteEl = document.getElementById("registerApprovalNote");
   const registerMicrosoftBtn = document.getElementById("registerMicrosoftBtn");
   bindInputShell(nameEl);
   bindInputShell(emailEl);
@@ -211,9 +298,15 @@ if (registerForm) {
     setError("registerNameError", "");
     setError("registerEmailError", "");
     setError("registerPasswordError", "");
+    setError("registerRoleError", "");
+    if (approvalNoteEl) {
+      approvalNoteEl.textContent = "";
+      approvalNoteEl.classList.add("hidden");
+    }
     const name = String(nameEl?.value || "").trim();
     const email = String(emailEl?.value || "").trim();
     const password = String(passwordEl?.value || "").trim();
+    const role = normalizeRole(String(roleEl?.value || "user"));
     let hasError = false;
     if (!name) {
       setError("registerNameError", "Name is required.");
@@ -227,12 +320,43 @@ if (registerForm) {
       setError("registerPasswordError", "Password is required.");
       hasError = true;
     }
+    if (!["user", "staff", "admin"].includes(role)) {
+      setError("registerRoleError", "Role is required.");
+      hasError = true;
+    }
     if (hasError) return;
 
-    const session = {
+    const account = upsertAccountRecord({
       email,
-      role: resolveRoleFromEmail(email, "user"),
       name,
+      role,
+      password,
+      approvalStatus: role === "user" ? "approved" : "pending",
+    });
+
+    if (role === "staff" || role === "admin") {
+      const requests = loadAccessRequests();
+      const exists = requests.some(
+        (item) =>
+          normalizeEmail(item.email) === normalizeEmail(account.email) &&
+          String(item.role || "").toLowerCase() === (role === "admin" ? "admin" : "staff") &&
+          String(item.status || "").toLowerCase() === "pending"
+      );
+      if (!exists) {
+        requests.unshift(createAccessRequestFromAccount(account));
+        saveAccessRequests(requests);
+      }
+      if (approvalNoteEl) {
+        approvalNoteEl.textContent = "Registration submitted. Please wait for admin approval before login.";
+        approvalNoteEl.classList.remove("hidden");
+      }
+      return;
+    }
+
+    const session = {
+      email: account.email,
+      role: account.role,
+      name: account.name,
       prefs: { notifEmail: true, notifInApp: true },
     };
     saveSession(session);

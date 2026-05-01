@@ -1,5 +1,7 @@
 const sessionKey = "quickaid-session-v1";
 const API_BASE = window.QUICKAID_API_BASE || "";
+const accountsStorageKey = "quickaid-accounts-v1";
+const accessRequestsStorageKey = "quickaid-access-requests-v1";
 
 function loadSession() {
   const raw = localStorage.getItem(sessionKey);
@@ -9,6 +11,36 @@ function loadSession() {
   } catch {
     return null;
   }
+}
+
+function loadLocalAccessRequests() {
+  try {
+    const raw = localStorage.getItem(accessRequestsStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAccessRequests(items) {
+  localStorage.setItem(accessRequestsStorageKey, JSON.stringify(Array.isArray(items) ? items : []));
+}
+
+function loadLocalAccounts() {
+  try {
+    const raw = localStorage.getItem(accountsStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalAccounts(items) {
+  localStorage.setItem(accountsStorageKey, JSON.stringify(Array.isArray(items) ? items : []));
 }
 
 function isAdminSession(session) {
@@ -36,6 +68,15 @@ const pages = Array.from(document.querySelectorAll(".admin-page"));
 const rangeButtons = Array.from(document.querySelectorAll(".range-tab[data-range]"));
 const adminTicketModal = document.getElementById("adminTicketModal");
 const adminTicketModalContent = document.getElementById("adminTicketModalContent");
+const addStaffModal = document.getElementById("addStaffModal");
+const addStaffForm = document.getElementById("addStaffForm");
+const addStaffFormError = document.getElementById("addStaffFormError");
+const addStaffTeamHint = document.getElementById("addStaffTeamHint");
+const addStaffNameInput = document.getElementById("addStaffName");
+const addStaffRoleInput = document.getElementById("addStaffRole");
+const addStaffEmailInput = document.getElementById("addStaffEmail");
+const addStaffPhoneInput = document.getElementById("addStaffPhone");
+const addStaffSubmitBtn = document.getElementById("addStaffSubmitBtn");
 const sharedTicketView = window.QuickAidTicketView || {};
 const overviewStatusOptions = ["Open", "In Progress", "Resolved"];
 const overviewTeamOptions = [
@@ -47,6 +88,16 @@ const overviewTeamOptions = [
   "Application Support",
   "Facilities",
 ];
+
+const nowForAdminMock = new Date();
+function isoFromOffset({ days = 0, months = 0, years = 0, hours = 10, minutes = 0 }) {
+  const date = new Date(nowForAdminMock);
+  date.setFullYear(date.getFullYear() - years);
+  date.setMonth(date.getMonth() - months);
+  date.setDate(date.getDate() - days);
+  date.setHours(hours, minutes, 0, 0);
+  return date.toISOString();
+}
 
 const mockAdminData = {
   overview: {
@@ -69,82 +120,147 @@ const mockAdminData = {
     },
     tickets: [
       {
-        ticketId: "#TKT101",
+        ticketId: "TKT-301",
         user: "John Doe",
-        issue: "VPN connection keeps dropping every 5 minutes",
+        issue: "VPN disconnects every five minutes",
         category: "Network and VPN",
         priority: "High",
         status: "In Progress",
         assignedTeam: "Network Team",
+        created_at: isoFromOffset({ days: 0, hours: 9, minutes: 30 }),
+        submitted_at: isoFromOffset({ days: 0, hours: 9, minutes: 30 }),
+        updated_at: isoFromOffset({ days: 0, hours: 12, minutes: 15 }),
       },
       {
-        ticketId: "#TKT102",
+        ticketId: "TKT-302",
         user: "Jane Smith",
-        issue: "Need Microsoft Office 365 installed on new laptop",
+        issue: "Need Microsoft Office 365 on new laptop",
         category: "Software Installation",
         priority: "Medium",
         status: "Open",
         assignedTeam: "Software Team",
+        created_at: isoFromOffset({ days: 0, hours: 8, minutes: 45 }),
+        submitted_at: isoFromOffset({ days: 0, hours: 8, minutes: 45 }),
+        updated_at: isoFromOffset({ days: 0, hours: 10, minutes: 5 }),
       },
       {
-        ticketId: "#TKT103",
+        ticketId: "TKT-303",
         user: "Mike Johnson",
         issue: "Cannot access shared drive after password reset",
         category: "Account and Access",
         priority: "High",
         status: "Resolved",
         assignedTeam: "Account Team",
+        created_at: isoFromOffset({ days: 2, hours: 11, minutes: 0 }),
+        submitted_at: isoFromOffset({ days: 2, hours: 11, minutes: 0 }),
+        updated_at: isoFromOffset({ days: 1, hours: 14, minutes: 25 }),
       },
       {
-        ticketId: "#TKT104",
+        ticketId: "TKT-304",
         user: "Sarah Williams",
         issue: "Keyboard keys not responding properly",
         category: "Hardware Issues",
         priority: "Low",
         status: "Open",
         assignedTeam: "Hardware Team",
+        created_at: isoFromOffset({ days: 5, hours: 9, minutes: 40 }),
+        submitted_at: isoFromOffset({ days: 5, hours: 9, minutes: 40 }),
+        updated_at: isoFromOffset({ days: 4, hours: 16, minutes: 10 }),
       },
       {
-        ticketId: "#TKT105",
+        ticketId: "TKT-305",
         user: "Robert Brown",
         issue: "Email not syncing on mobile device",
         category: "Email Issues",
         priority: "Medium",
         status: "In Progress",
         assignedTeam: "Account Team",
+        created_at: isoFromOffset({ days: 12, hours: 10, minutes: 20 }),
+        submitted_at: isoFromOffset({ days: 12, hours: 10, minutes: 20 }),
+        updated_at: isoFromOffset({ days: 10, hours: 13, minutes: 0 }),
+      },
+      {
+        ticketId: "TKT-306",
+        user: "Aisha Tan",
+        issue: "Attendance module page crashes on submit",
+        category: "Network and VPN",
+        priority: "High",
+        status: "Open",
+        assignedTeam: "Application Support",
+        created_at: isoFromOffset({ days: 20, hours: 15, minutes: 5 }),
+        submitted_at: isoFromOffset({ days: 20, hours: 15, minutes: 5 }),
+        updated_at: isoFromOffset({ days: 19, hours: 9, minutes: 30 }),
+      },
+      {
+        ticketId: "TKT-307",
+        user: "Ben Lee",
+        issue: "Lab printer toner replacement request",
+        category: "Account and Access",
+        priority: "Low",
+        status: "Resolved",
+        assignedTeam: "Facilities",
+        created_at: isoFromOffset({ months: 2, days: 3, hours: 10, minutes: 0 }),
+        submitted_at: isoFromOffset({ months: 2, days: 3, hours: 10, minutes: 0 }),
+        updated_at: isoFromOffset({ months: 2, days: 1, hours: 11, minutes: 10 }),
+      },
+      {
+        ticketId: "TKT-308",
+        user: "Farah Lim",
+        issue: "Legacy account access request",
+        category: "Facilities",
+        priority: "Medium",
+        status: "Resolved",
+        assignedTeam: "Account Team",
+        created_at: isoFromOffset({ years: 1, months: 1, days: 2, hours: 9, minutes: 0 }),
+        submitted_at: isoFromOffset({ years: 1, months: 1, days: 2, hours: 9, minutes: 0 }),
+        updated_at: isoFromOffset({ years: 1, months: 1, days: 1, hours: 12, minutes: 0 }),
+      },
+      {
+        ticketId: "TKT-309",
+        user: "Nurul Hadi",
+        issue: "Student Wi-Fi onboarding fails for new users",
+        category: "Network and VPN",
+        priority: "Medium",
+        status: "In Progress",
+        assignedTeam: "Network Team",
+        created_at: isoFromOffset({ days: 6, hours: 14, minutes: 10 }),
+        submitted_at: isoFromOffset({ days: 6, hours: 14, minutes: 10 }),
+        updated_at: isoFromOffset({ days: 5, hours: 11, minutes: 55 }),
+      },
+      {
+        ticketId: "TKT-310",
+        user: "Hui Wen",
+        issue: "Blocked from staff portal after MFA reset",
+        category: "Account and Access",
+        priority: "High",
+        status: "Open",
+        assignedTeam: "Account Team",
+        created_at: isoFromOffset({ days: 3, hours: 10, minutes: 40 }),
+        submitted_at: isoFromOffset({ days: 3, hours: 10, minutes: 40 }),
+        updated_at: isoFromOffset({ days: 2, hours: 9, minutes: 5 }),
+      },
+      {
+        ticketId: "TKT-311",
+        user: "Daniel Chong",
+        issue: "Projector remote battery replacement request",
+        category: "Facilities",
+        priority: "Low",
+        status: "Resolved",
+        assignedTeam: "Facilities",
+        created_at: isoFromOffset({ months: 1, days: 1, hours: 9, minutes: 15 }),
+        submitted_at: isoFromOffset({ months: 1, days: 1, hours: 9, minutes: 15 }),
+        updated_at: isoFromOffset({ months: 1, hours: 12, minutes: 0 }),
       },
     ],
   },
   manageTickets: {
-    tickets: [
-      {
-        ticketId: "TKT-2014",
-        issue: "Wi-Fi outage in Block C",
-        priority: "High",
-        status: "In Progress",
-        assignedTeam: "Infrastructure",
-      },
-      {
-        ticketId: "TKT-2015",
-        issue: "Portal login failure",
-        priority: "Medium",
-        status: "New",
-        assignedTeam: "Application Support",
-      },
-      {
-        ticketId: "TKT-2016",
-        issue: "Air conditioning leak",
-        priority: "Low",
-        status: "Resolved",
-        assignedTeam: "Facilities",
-      },
-    ],
+    tickets: [],
   },
   analytics: {
     summary: {
       new: 15,
       complete: 87,
-      agents: 10,
+      staff: 10,
       users: 12,
       tickets: 1266,
     },
@@ -157,23 +273,93 @@ const mockAdminData = {
   supportTeams: {
     teams: [
       {
-        name: "Infrastructure",
-        activeAgents: 4,
-        scope: "Network, campus devices, internet stability",
+        id: "technical",
+        name: "Technical Support",
+        badge: "T",
+        badgeClass: "blue",
+        members: 4,
+        activeTickets: 45,
+        lead: "Emma Davis",
+        leadRole: "Senior Support Staff",
+        email: "emma.davis@company.com",
+        phone: "+1 (555) 234-5678",
+        permissions: 4,
+        stats: { active: 8, resolved: 142, avgTime: "2.3h", satisfaction: "98%" },
+        staffMembers: [
+          { name: "Emma Davis", role: "Senior Support Staff", email: "emma.davis@company.com", phone: "+1 (555) 234-5678", activeTickets: 8 },
+          { name: "Noah King", role: "Support Staff", email: "noah.king@company.com", phone: "+1 (555) 921-2012", activeTickets: 6 },
+          { name: "Amira Low", role: "Support Staff", email: "amira.low@company.com", phone: "+1 (555) 352-7740", activeTickets: 5 },
+          { name: "Hakim Musa", role: "Support Staff", email: "hakim.musa@company.com", phone: "+1 (555) 117-4029", activeTickets: 4 },
+        ],
       },
       {
-        name: "Application Support",
-        activeAgents: 3,
-        scope: "Portal access, account resets, learning systems",
+        id: "billing",
+        name: "Billing Support",
+        badge: "B",
+        badgeClass: "green",
+        members: 2,
+        activeTickets: 23,
+        lead: "Michael Brown",
+        leadRole: "Billing Specialist",
+        email: "michael.brown@company.com",
+        phone: "+1 (555) 120-3311",
+        permissions: 3,
+        stats: { active: 5, resolved: 93, avgTime: "2.8h", satisfaction: "96%" },
+        staffMembers: [
+          { name: "Michael Brown", role: "Billing Specialist", email: "michael.brown@company.com", phone: "+1 (555) 120-3311", activeTickets: 5 },
+          { name: "Jia Yi", role: "Billing Staff", email: "jiayi.billing@company.com", phone: "+1 (555) 811-2291", activeTickets: 3 },
+        ],
       },
       {
-        name: "Facilities",
-        activeAgents: 3,
-        scope: "Classroom equipment, power, and environment",
+        id: "premium",
+        name: "Premium Support",
+        badge: "P",
+        badgeClass: "purple",
+        members: 2,
+        activeTickets: 18,
+        lead: "Lisa Anderson",
+        leadRole: "Premium Specialist",
+        email: "lisa.anderson@company.com",
+        phone: "+1 (555) 889-0041",
+        permissions: 4,
+        stats: { active: 4, resolved: 81, avgTime: "1.9h", satisfaction: "99%" },
+        staffMembers: [
+          { name: "Lisa Anderson", role: "Premium Specialist", email: "lisa.anderson@company.com", phone: "+1 (555) 889-0041", activeTickets: 4 },
+          { name: "Sean Koh", role: "Premium Staff", email: "sean.koh@company.com", phone: "+1 (555) 201-4410", activeTickets: 3 },
+        ],
       },
+      {
+        id: "sales",
+        name: "Sales Support",
+        badge: "S",
+        badgeClass: "orange",
+        members: 1,
+        activeTickets: 12,
+        lead: "Robert Taylor",
+        leadRole: "Sales Coordinator",
+        email: "robert.taylor@company.com",
+        phone: "+1 (555) 991-2104",
+        permissions: 2,
+        stats: { active: 2, resolved: 44, avgTime: "3.1h", satisfaction: "95%" },
+        staffMembers: [
+          { name: "Robert Taylor", role: "Sales Coordinator", email: "robert.taylor@company.com", phone: "+1 (555) 991-2104", activeTickets: 2 },
+        ],
+      },
+    ],
+    accessRequests: [
+      { id: "AR-001", teamId: "technical", requester: "Emily Chen", email: "emily.chen@company.com", department: "Sales", role: "Staff", status: "pending", date: "Feb 3, 2026, 9:15 AM" },
+      { id: "AR-002", teamId: "billing", requester: "Michael Brown", email: "michael.brown@company.com", department: "Finance", role: "Staff", status: "pending", date: "Feb 2, 2026, 2:30 PM" },
+      { id: "AR-003", teamId: "technical", requester: "Lisa Anderson", email: "lisa.anderson@company.com", department: "IT Support", role: "Admin", status: "pending", date: "Feb 1, 2026, 11:20 AM" },
+      { id: "AR-004", teamId: "sales", requester: "Robert Taylor", email: "robert.taylor@company.com", department: "HR", role: "Staff", status: "approved", date: "Jan 30, 2026, 10:00 AM", reviewedBy: "Admin" },
+      { id: "AR-005", teamId: "premium", requester: "Jennifer Lee", email: "jennifer.lee@external.com", department: "External Contractor", role: "Staff", status: "rejected", date: "Jan 28, 2026, 1:45 PM", reviewedBy: "Admin" },
     ],
   },
 };
+
+// Keep manage list aligned with overview mock tickets for range testing.
+if (!Array.isArray(mockAdminData.manageTickets.tickets) || !mockAdminData.manageTickets.tickets.length) {
+  mockAdminData.manageTickets.tickets = mockAdminData.overview.tickets.map((ticket) => ({ ...ticket }));
+}
 
 let activeRange = "today";
 let allTicketsState = [];
@@ -182,6 +368,18 @@ let updateToastTimer = null;
 let overviewTrendChart = null;
 let activeOverviewModalTicketId = "";
 const selectedManageTicketIds = new Set();
+let activeSupportTeamId = "";
+let supportRequestFilterValue = "all";
+let supportTeamsState = null;
+let activeSupportTab = "groups";
+const addTeamModal = document.getElementById("addTeamModal");
+const addTeamForm = document.getElementById("addTeamForm");
+const addTeamNameInput = document.getElementById("addTeamName");
+const addTeamLeadInput = document.getElementById("addTeamLead");
+const addTeamLeadEmailInput = document.getElementById("addTeamLeadEmail");
+const addTeamNameError = document.getElementById("addTeamNameError");
+const addTeamLeadError = document.getElementById("addTeamLeadError");
+const addTeamLeadEmailError = document.getElementById("addTeamLeadEmailError");
 
 function resolveApiUrl(path) {
   if (!API_BASE) return path;
@@ -260,6 +458,292 @@ function showUpdateToast({ title, detail, tone = "success" }) {
     toast?.classList.remove("show");
     toast?.classList.add("hidden");
   }, dismissMs);
+}
+
+function createTeamIdFromName(name, existingTeams) {
+  const base = String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "team";
+  const existingIds = new Set((existingTeams || []).map((team) => String(team.id || "")));
+  let candidate = base;
+  let suffix = 2;
+  while (existingIds.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  return candidate;
+}
+
+function createSupportTeamRecord(input, existingTeams) {
+  const badgeClasses = ["blue", "green", "purple", "orange"];
+  const name = String(input?.name || "").trim();
+  const lead = String(input?.lead || "").trim();
+  const email = String(input?.email || "").trim();
+  const id = createTeamIdFromName(name, existingTeams);
+  const badge = (name.match(/[A-Za-z0-9]/)?.[0] || "T").toUpperCase();
+  const badgeClass = badgeClasses[(existingTeams?.length || 0) % badgeClasses.length];
+  return {
+    id,
+    name,
+    badge,
+    badgeClass,
+    members: 1,
+    activeTickets: 0,
+    lead: lead || "Team Lead",
+    leadRole: "Support Staff",
+    email: email || "lead@company.com",
+    phone: "+1 (555) 000-0000",
+    permissions: 1,
+    stats: { active: 0, resolved: 0, avgTime: "N/A", satisfaction: "N/A" },
+    staffMembers: [
+      {
+        name: lead || "Team Lead",
+        role: "Support Staff",
+        email: email || "lead@company.com",
+        phone: "+1 (555) 000-0000",
+        activeTickets: 0,
+      },
+    ],
+  };
+}
+
+async function persistSupportTeamCreate(team) {
+  // TODO_BACKEND_REAL_DATA: replace local-first create with backend-first create once API is stable.
+  try {
+    const response = await fetch(resolveApiUrl("/api/admin/support_teams"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(team),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+function openAddTeamModal() {
+  if (!addTeamModal) return;
+  addTeamModal.classList.remove("hidden");
+  addTeamNameInput?.focus();
+}
+
+function closeAddTeamModal() {
+  if (!addTeamModal) return;
+  addTeamModal.classList.add("hidden");
+}
+
+function resetAddTeamErrors() {
+  if (addTeamNameError) addTeamNameError.textContent = "";
+  if (addTeamLeadError) addTeamLeadError.textContent = "";
+  if (addTeamLeadEmailError) addTeamLeadEmailError.textContent = "";
+}
+
+function validateAddTeamForm(teams, payload) {
+  resetAddTeamErrors();
+  let hasError = false;
+  if (!payload.name) {
+    if (addTeamNameError) addTeamNameError.textContent = "Team name is required.";
+    hasError = true;
+  }
+  const duplicate = teams.some(
+    (team) => String(team.name || "").trim().toLowerCase() === payload.name.toLowerCase()
+  );
+  if (duplicate) {
+    if (addTeamNameError) addTeamNameError.textContent = "Team name already exists.";
+    hasError = true;
+  }
+  if (payload.email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(payload.email)) {
+      if (addTeamLeadEmailError) addTeamLeadEmailError.textContent = "Please enter a valid email.";
+      hasError = true;
+    }
+  }
+  return !hasError;
+}
+
+async function handleAddSupportTeam(payload) {
+  const currentState = supportTeamsState || mockAdminData.supportTeams;
+  const teams = Array.isArray(currentState?.teams) ? currentState.teams : [];
+  if (!validateAddTeamForm(teams, payload)) {
+    showUpdateToast({ title: "Team not added", detail: "Fix form errors and try again.", tone: "warning" });
+    return;
+  }
+  const newTeam = createSupportTeamRecord(payload, teams);
+  const nextState = {
+    ...currentState,
+    // TEMP_DATA: keep local insert so frontend can be tested before backend API is ready.
+    teams: [...teams, newTeam],
+  };
+  supportTeamsState = nextState;
+  activeSupportTeamId = newTeam.id;
+  activeSupportTab = "groups";
+  renderSupportTeams(nextState);
+  activateAdminPage("support-team-detail");
+  window.history.replaceState(null, "", "#support-team-detail");
+  const persisted = await persistSupportTeamCreate(newTeam);
+  showUpdateToast({
+    title: persisted ? "Team added" : "Team added locally",
+    detail: persisted ? `${newTeam.name} has been created.` : `${newTeam.name} is available in this session.`,
+    tone: persisted ? "success" : "warning",
+  });
+  closeAddTeamModal();
+}
+
+function clearAddStaffFormError() {
+  if (!(addStaffFormError instanceof HTMLElement)) return;
+  addStaffFormError.textContent = "";
+  addStaffFormError.classList.add("hidden");
+}
+
+function setAddStaffFormError(message) {
+  if (!(addStaffFormError instanceof HTMLElement)) return;
+  addStaffFormError.textContent = message;
+  addStaffFormError.classList.remove("hidden");
+}
+
+function isValidEmail(value) {
+  const email = String(value || "").trim();
+  if (!email) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function openAddStaffModal(teamName = "") {
+  if (!(addStaffModal instanceof HTMLElement)) return;
+  if (addStaffTeamHint instanceof HTMLElement) {
+    addStaffTeamHint.textContent = teamName
+      ? `Add a new support staff for ${teamName}.`
+      : "Create a new support staff profile.";
+  }
+  if (addStaffForm instanceof HTMLFormElement) addStaffForm.reset();
+  clearAddStaffFormError();
+  addStaffModal.classList.remove("hidden");
+  if (addStaffNameInput instanceof HTMLInputElement) addStaffNameInput.focus();
+}
+
+function closeAddStaffModal() {
+  if (!(addStaffModal instanceof HTMLElement)) return;
+  addStaffModal.classList.add("hidden");
+  clearAddStaffFormError();
+}
+
+function createSupportStaffRecord(input) {
+  const name = String(input?.name || "").trim();
+  const role = String(input?.role || "").trim() || "Support Staff";
+  const email = String(input?.email || "").trim() || "staff@company.com";
+  const phone = String(input?.phone || "").trim() || "+1 (555) 000-0000";
+  return {
+    name,
+    role,
+    email,
+    // Temporary preview default while backend enriches profile details.
+    phone,
+    activeTickets: 0,
+  };
+}
+
+async function persistSupportStaffCreate(teamId, staff) {
+  try {
+    const response = await fetch(resolveApiUrl(`/api/admin/support_teams/${encodeURIComponent(teamId)}/staff`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(staff),
+    });
+    if (response.ok) return { ok: true };
+    let errorText = "";
+    try {
+      const body = await response.json();
+      errorText = String(body?.message || body?.error || "").trim();
+    } catch {
+      errorText = "";
+    }
+    return {
+      ok: false,
+      message: errorText || `Request failed (${response.status}).`,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: `Network issue: ${String(error?.message || "Unable to reach API.")}`,
+    };
+  }
+}
+
+async function handleAddStaffInTeamSubmit() {
+  const currentState = supportTeamsState || mockAdminData.supportTeams;
+  const teams = Array.isArray(currentState?.teams) ? currentState.teams : [];
+  const teamIndex = teams.findIndex((team) => String(team.id) === String(activeSupportTeamId));
+  if (teamIndex < 0) {
+    setAddStaffFormError("Select a team before adding a staff member.");
+    return;
+  }
+  const selectedTeam = teams[teamIndex];
+  const normalizedName =
+    addStaffNameInput instanceof HTMLInputElement ? String(addStaffNameInput.value || "").trim() : "";
+  if (!normalizedName) {
+    setAddStaffFormError("Staff name is required.");
+    if (addStaffNameInput instanceof HTMLInputElement) addStaffNameInput.focus();
+    return;
+  }
+  const nextEmail = addStaffEmailInput instanceof HTMLInputElement ? String(addStaffEmailInput.value || "").trim() : "";
+  if (!isValidEmail(nextEmail)) {
+    setAddStaffFormError("Please enter a valid email format.");
+    if (addStaffEmailInput instanceof HTMLInputElement) addStaffEmailInput.focus();
+    return;
+  }
+  const duplicate = (Array.isArray(selectedTeam.staffMembers) ? selectedTeam.staffMembers : []).some(
+    (staff) => String(staff.name || "").trim().toLowerCase() === normalizedName.toLowerCase()
+  );
+  if (duplicate) {
+    setAddStaffFormError("A staff member with this name already exists in the selected team.");
+    return;
+  }
+  clearAddStaffFormError();
+  if (addStaffSubmitBtn instanceof HTMLButtonElement) {
+    addStaffSubmitBtn.disabled = true;
+    addStaffSubmitBtn.textContent = "Adding...";
+  }
+  const staffRole = addStaffRoleInput instanceof HTMLInputElement ? String(addStaffRoleInput.value || "").trim() : "";
+  const staffPhone =
+    addStaffPhoneInput instanceof HTMLInputElement ? String(addStaffPhoneInput.value || "").trim() : "";
+  const newStaff = createSupportStaffRecord({
+    name: normalizedName,
+    role: staffRole,
+    email: nextEmail,
+    phone: staffPhone,
+  });
+  const currentStaff = Array.isArray(selectedTeam.staffMembers) ? selectedTeam.staffMembers : [];
+  const nextTeam = {
+    ...selectedTeam,
+    staffMembers: [...currentStaff, newStaff],
+    members: currentStaff.length + 1,
+    stats: {
+      ...(selectedTeam.stats || {}),
+      active: Number(selectedTeam?.stats?.active || 0) + Number(newStaff.activeTickets || 0),
+    },
+  };
+  const nextTeams = [...teams];
+  nextTeams[teamIndex] = nextTeam;
+  const nextState = {
+    ...currentState,
+    teams: nextTeams,
+  };
+  supportTeamsState = nextState;
+  renderSupportTeams(nextState);
+  const persistResult = await persistSupportStaffCreate(selectedTeam.id, newStaff);
+  if (addStaffSubmitBtn instanceof HTMLButtonElement) {
+    addStaffSubmitBtn.disabled = false;
+    addStaffSubmitBtn.textContent = "Add Staff";
+  }
+  closeAddStaffModal();
+  showUpdateToast({
+    title: persistResult.ok ? "Staff added" : "Staff added locally",
+    detail: persistResult.ok
+      ? `${newStaff.name} was added to ${selectedTeam.name}.`
+      : `${newStaff.name} was added. Sync failed: ${persistResult.message}`,
+    tone: persistResult.ok ? "success" : "warning",
+  });
 }
 
 function setText(id, value) {
@@ -972,7 +1456,7 @@ function renderAnalytics(data) {
   const summary = data?.summary || {};
   setText("analyticsNewCount", summary.new ?? 0);
   setText("analyticsCompleteCount", summary.complete ?? 0);
-  setText("analyticsAgentsCount", summary.agents ?? 0);
+  setText("analyticsStaffCount", summary.staff ?? 0);
   setText("analyticsUsersCount", summary.users ?? 0);
   setText("analyticsTicketsCount", summary.tickets ?? 0);
 
@@ -992,20 +1476,147 @@ function renderAnalytics(data) {
 }
 
 function renderSupportTeams(data) {
+  supportTeamsState = data;
+  const addTeamButton = document.getElementById("addTeamBtn");
+  const searchRow = document.getElementById("supportSearchRow");
   const grid = document.getElementById("supportTeamsGrid");
-  if (!grid) return;
+  const detail = document.getElementById("supportTeamDetail");
+  const accessPanel = document.getElementById("supportAccessPanel");
+  const accessBody = document.getElementById("supportAccessBody");
+  const staffCards = document.getElementById("supportStaffCards");
+  const groupsPanel = document.getElementById("supportGroupsPanel");
+  const subtitle = document.getElementById("teamDetailSubtitle");
+  const requestFilter = document.getElementById("supportRequestFilter");
+  const searchInput = document.getElementById("supportTeamSearch");
+  if (!grid || !detail || !accessPanel || !accessBody || !staffCards || !groupsPanel) return;
   const teams = Array.isArray(data?.teams) ? data.teams : [];
-  grid.innerHTML = teams
+  const searchValue = String(searchInput?.value || "").trim().toLowerCase();
+  const visibleTeams = teams.filter((team) => {
+    if (!searchValue) return true;
+    return [team.name, team.lead, team.email, team.leadRole].some((item) =>
+      String(item || "").toLowerCase().includes(searchValue)
+    );
+  });
+  if (!activeSupportTeamId && visibleTeams.length) activeSupportTeamId = String(visibleTeams[0].id || "");
+  const activeTeam = teams.find((team) => String(team.id) === activeSupportTeamId) || null;
+
+  grid.innerHTML = visibleTeams
     .map(
       (team) => `
-      <article class="team-card">
+      <button type="button" class="team-card support-team-card ${
+        String(team.id) === activeSupportTeamId ? "active" : ""
+      }" data-support-team-id="${escapeHtml(team.id)}">
+        <div class="support-team-top">
+          <span class="support-team-badge ${escapeHtml(team.badgeClass)}">${escapeHtml(team.badge)}</span>
+          <span class="support-team-dotmenu">⋮</span>
+        </div>
         <h4>${escapeHtml(team.name)}</h4>
-        <p>${escapeHtml(team.activeAgents)} active agents</p>
-        <small>${escapeHtml(team.scope)}</small>
+        <p>${escapeHtml(team.members)} members</p>
+        <small>${escapeHtml(team.activeTickets)} active tickets</small>
+      </button>
+    `
+    )
+    .join("");
+
+  if (!activeTeam) return;
+
+  detail.innerHTML = `
+    <article class="team-card staff-detail-card team-lead-card">
+      <div class="team-detail-head">
+        <div class="team-detail-profile">
+          <span class="team-detail-avatar">${escapeHtml(activeTeam.lead?.split(" ").map((p) => p[0]).join("").slice(0, 2) || "NA")}</span>
+          <div>
+            <h4>${escapeHtml(activeTeam.lead)}</h4>
+            <p class="team-role-chip">${escapeHtml(activeTeam.leadRole)}</p>
+            <p class="sub">${escapeHtml(activeTeam.email)} · ${escapeHtml(activeTeam.phone)}</p>
+          </div>
+        </div>
+      </div>
+      <div class="team-detail-stats">
+        <div class="team-metric"><span>Active Tickets</span><strong>${escapeHtml(activeTeam.stats.active)}</strong></div>
+        <div class="team-metric"><span>Resolved</span><strong>${escapeHtml(activeTeam.stats.resolved)}</strong></div>
+        <div class="team-metric"><span>Avg Time</span><strong>${escapeHtml(activeTeam.stats.avgTime)}</strong></div>
+        <div class="team-metric"><span>Satisfaction</span><strong>${escapeHtml(activeTeam.stats.satisfaction)}</strong></div>
+      </div>
+    </article>
+  `;
+
+  if (subtitle) subtitle.textContent = `${activeTeam.name} team members and group settings.`;
+
+  const staffMembers = Array.isArray(activeTeam.staffMembers) ? activeTeam.staffMembers : [];
+  staffCards.innerHTML = staffMembers
+    .map(
+      (staff) => `
+      <article class="team-card staff-detail-card">
+        <div class="team-detail-head">
+          <div class="team-detail-profile">
+            <span class="team-detail-avatar">${escapeHtml(staff.name?.split(" ").map((p) => p[0]).join("").slice(0, 2) || "NA")}</span>
+            <div>
+              <h4>${escapeHtml(staff.name)}</h4>
+              <p class="team-role-chip">${escapeHtml(staff.role)}</p>
+              <p class="sub">${escapeHtml(staff.email)} · ${escapeHtml(staff.phone)}</p>
+            </div>
+          </div>
+        </div>
+        <div class="team-detail-stats">
+          <div class="team-metric"><span>Active Tickets</span><strong>${escapeHtml(staff.activeTickets)}</strong></div>
+        </div>
       </article>
     `
     )
     .join("");
+
+  const localRequests = loadLocalAccessRequests();
+  const baseRequests = Array.isArray(data?.accessRequests) ? data.accessRequests : [];
+  const mergedRequests = [...localRequests, ...baseRequests].reduce((acc, item) => {
+    const key = `${String(item.id || "")}|${String(item.email || "").toLowerCase()}|${String(item.role || "").toLowerCase()}`;
+    if (!acc.some((existing) => `${String(existing.id || "")}|${String(existing.email || "").toLowerCase()}|${String(existing.role || "").toLowerCase()}` === key)) {
+      acc.push(item);
+    }
+    return acc;
+  }, []);
+  const requests = mergedRequests.filter((req) => {
+    const role = String(req.role || "").toLowerCase();
+    return role === "staff" || role === "admin";
+  });
+  const filtered = requests.filter((req) => {
+    const sameTeam = String(req.teamId || "") === String(activeTeam.id || "");
+    if (!sameTeam) return false;
+    return supportRequestFilterValue === "all" ? true : String(req.status) === supportRequestFilterValue;
+  });
+  accessBody.innerHTML = filtered
+    .map(
+      (req) => `
+      <tr>
+        <td><strong>${escapeHtml(req.requester)}</strong><div class="sub">${escapeHtml(req.email)}</div></td>
+        <td>${escapeHtml(req.department)}</td>
+        <td><span class="role-pill">${escapeHtml(req.role)}</span></td>
+        <td><span class="status-pill ${escapeHtml(req.status)}">${escapeHtml(req.status)}</span></td>
+        <td>${escapeHtml(req.date)}</td>
+        <td class="request-actions">
+          ${
+            activeSupportTab === "permissions" && String(req.status) === "pending"
+              ? `<button type="button" class="link-btn approve" data-request-action="approve" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}" data-request-team-id="${escapeHtml(req.teamId || "")}" data-requester="${escapeHtml(req.requester || "")}">Approve</button><button type="button" class="link-btn reject" data-request-action="reject" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}" data-request-team-id="${escapeHtml(req.teamId || "")}" data-requester="${escapeHtml(req.requester || "")}">Reject</button>`
+              : `<span class="sub">${escapeHtml(req.reviewedBy ? `Reviewed by ${req.reviewedBy}` : "No actions")}</span>`
+          }
+        </td>
+      </tr>
+    `
+    )
+    .join("");
+
+  if (requestFilter) requestFilter.value = supportRequestFilterValue;
+
+  const showGroupsOverview = activeSupportTab === "groups";
+  addTeamButton?.classList.toggle("hidden", !showGroupsOverview);
+  searchRow?.classList.toggle("hidden", !showGroupsOverview);
+  grid.classList.toggle("hidden", !showGroupsOverview);
+  groupsPanel.classList.toggle("hidden", activeSupportTab !== "groups");
+  accessPanel.classList.toggle("hidden", activeSupportTab !== "permissions");
+  document.querySelectorAll(".support-tab[data-support-tab]").forEach((tab) => {
+    const tabValue = String(tab.getAttribute("data-support-tab") || "");
+    tab.classList.toggle("active", tabValue === activeSupportTab);
+  });
 }
 
 async function applyTicketChanges(ticket, nextStatus, nextTeam, triggerButton = null, suppressToast = false) {
@@ -1062,7 +1673,8 @@ async function loadAdminData() {
   void overviewRes;
   const overviewTickets = Array.isArray(overviewRes?.tickets) ? overviewRes.tickets : [];
   const manageTickets = Array.isArray(manageRes?.tickets) ? manageRes.tickets : [];
-  const sourceTickets = overviewTickets.length ? overviewTickets : manageTickets;
+  // Prefer full manage list as source of truth. Overview endpoint may already be range-filtered.
+  const sourceTickets = manageTickets.length ? manageTickets : overviewTickets;
   allTicketsState = sourceTickets.map((ticket) => normalizeAdminTicket(ticket));
   overviewTicketsState = getOverviewTicketsByRange();
   renderOverview(computeOverviewDataFromTickets(overviewTicketsState));
@@ -1088,6 +1700,188 @@ pageLinks.forEach((link) => {
     activateAdminPage(pageId);
     window.history.replaceState(null, "", `#${pageId}`);
   });
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  const teamBtn = target.closest("[data-support-team-id]");
+  if (teamBtn instanceof HTMLElement) {
+    activeSupportTeamId = String(teamBtn.dataset.supportTeamId || "");
+    renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
+    const targetPage = activeSupportTab === "permissions" ? "support-teams" : "support-team-detail";
+    activateAdminPage(targetPage);
+    window.history.replaceState(null, "", `#${targetPage}`);
+  }
+});
+
+const supportRequestFilter = document.getElementById("supportRequestFilter");
+supportRequestFilter?.addEventListener("change", () => {
+  supportRequestFilterValue = String(supportRequestFilter.value || "all");
+  renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
+});
+
+const supportAccessBody = document.getElementById("supportAccessBody");
+supportAccessBody?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLButtonElement)) return;
+  const action = String(target.dataset.requestAction || "");
+  if (!["approve", "reject"].includes(action)) return;
+  const requestId = String(target.dataset.requestId || "");
+  const requestEmail = String(target.dataset.requestEmail || "").toLowerCase();
+  const requestRole = String(target.dataset.requestRole || "").toLowerCase();
+  const requestTeamId = String(target.dataset.requestTeamId || "");
+  const requesterName = String(target.dataset.requester || "Staff User");
+  if (!requestEmail || !requestRole) return;
+
+  const nextStatus = action === "approve" ? "approved" : "rejected";
+  const reviewer = session?.email || "Admin";
+  const currentState = supportTeamsState || mockAdminData.supportTeams;
+  const matchedRequest = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).find((req) => {
+    const sameId = requestId && String(req.id || "") === requestId;
+    const sameIdentity =
+      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
+    return sameId || sameIdentity;
+  });
+  const nextAccess = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).map((req) => {
+    const sameId = requestId && String(req.id || "") === requestId;
+    const sameIdentity =
+      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
+    if (!sameId && !sameIdentity) return req;
+    return { ...req, status: nextStatus, reviewedBy: reviewer };
+  });
+  let nextTeams = Array.isArray(currentState?.teams) ? [...currentState.teams] : [];
+  if (nextStatus === "approved" && (requestRole === "staff" || requestRole === "admin")) {
+    const targetTeamId = requestTeamId || String(matchedRequest?.teamId || activeSupportTeamId || "");
+    const teamIndex = nextTeams.findIndex((team) => String(team.id || "") === targetTeamId);
+    if (teamIndex >= 0) {
+      const team = nextTeams[teamIndex];
+      const existingStaff = Array.isArray(team.staffMembers) ? [...team.staffMembers] : [];
+      const hasStaff = existingStaff.some((staff) => String(staff.email || "").toLowerCase() === requestEmail);
+      const roleLabel = requestRole === "admin" ? "Admin (Team Lead)" : "Support Staff";
+      if (!hasStaff) {
+        existingStaff.push({
+          name: requesterName || requestEmail.split("@")[0],
+          role: roleLabel,
+          email: requestEmail,
+          phone: "-",
+          activeTickets: 0,
+        });
+      }
+      const nextTeam = {
+        ...team,
+        staffMembers: existingStaff,
+        members: existingStaff.length,
+      };
+      // Team can only have one lead, approved admin becomes/updates the lead record.
+      if (requestRole === "admin") {
+        nextTeam.lead = requesterName || requestEmail.split("@")[0];
+        nextTeam.leadRole = "Team Lead (Admin)";
+        nextTeam.email = requestEmail;
+      }
+      nextTeams[teamIndex] = nextTeam;
+    }
+  }
+  supportTeamsState = { ...currentState, accessRequests: nextAccess, teams: nextTeams };
+
+  const localRequests = loadLocalAccessRequests().map((req) => {
+    const sameId = requestId && String(req.id || "") === requestId;
+    const sameIdentity =
+      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
+    if (!sameId && !sameIdentity) return req;
+    return { ...req, status: nextStatus, reviewedBy: reviewer };
+  });
+  saveLocalAccessRequests(localRequests);
+
+  const accounts = loadLocalAccounts().map((acc) => {
+    const same = String(acc.email || "").toLowerCase() === requestEmail && String(acc.role || "").toLowerCase() === requestRole;
+    if (!same) return acc;
+    return {
+      ...acc,
+      approvalStatus: nextStatus === "approved" ? "approved" : "rejected",
+      updated_at: new Date().toISOString(),
+    };
+  });
+  saveLocalAccounts(accounts);
+
+  showUpdateToast({
+    title: nextStatus === "approved" ? "Access approved" : "Access rejected",
+    detail: `${requestEmail} (${requestRole})`,
+    tone: nextStatus === "approved" ? "success" : "warning",
+  });
+  renderSupportTeams(supportTeamsState);
+});
+
+const supportTeamSearch = document.getElementById("supportTeamSearch");
+supportTeamSearch?.addEventListener("input", () => {
+  renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
+});
+
+const addTeamBtn = document.getElementById("addTeamBtn");
+addTeamBtn?.addEventListener("click", () => {
+  resetAddTeamErrors();
+  addTeamForm?.reset();
+  openAddTeamModal();
+});
+
+addTeamForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const payload = {
+    name: String(addTeamNameInput?.value || "").trim(),
+    lead: String(addTeamLeadInput?.value || "").trim(),
+    email: String(addTeamLeadEmailInput?.value || "").trim(),
+  };
+  void handleAddSupportTeam(payload);
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  if (target.dataset.closeAddTeamModal === "true") closeAddTeamModal();
+});
+
+const addStaffInTeamBtn = document.getElementById("addStaffInTeamBtn");
+addStaffInTeamBtn?.addEventListener("click", () => {
+  const currentState = supportTeamsState || mockAdminData.supportTeams;
+  const teams = Array.isArray(currentState?.teams) ? currentState.teams : [];
+  const activeTeam = teams.find((team) => String(team.id) === String(activeSupportTeamId));
+  if (!activeTeam) {
+    showUpdateToast({ title: "No team selected", detail: "Select a team before adding a staff member.", tone: "warning" });
+    return;
+  }
+  openAddStaffModal(String(activeTeam.name || ""));
+});
+
+addStaffForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void handleAddStaffInTeamSubmit();
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  if (target.dataset.closeAddStaffModal === "true") closeAddStaffModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeAddStaffModal();
+});
+
+document.querySelectorAll(".support-tab[data-support-tab]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    activeSupportTab = String(tab.getAttribute("data-support-tab") || "groups");
+    activateAdminPage("support-teams");
+    window.history.replaceState(null, "", "#support-teams");
+    renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
+  });
+});
+
+const backToTeamsBtn = document.getElementById("backToTeamsBtn");
+backToTeamsBtn?.addEventListener("click", () => {
+  activeSupportTab = "groups";
+  activateAdminPage("support-teams");
+  window.history.replaceState(null, "", "#support-teams");
+  renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
 });
 
 const initialHashPage = window.location.hash.replace("#", "");

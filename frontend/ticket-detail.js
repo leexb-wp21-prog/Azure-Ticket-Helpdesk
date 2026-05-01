@@ -29,10 +29,23 @@ function loadCachedTickets() {
     const raw = localStorage.getItem(ticketCacheStorageKey);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(normalizeDetailTicket) : [];
   } catch {
     return [];
   }
+}
+
+function normalizeDetailTicket(source) {
+  const item = source || {};
+  const ticketId = item.ticket_id || item.ticketId || item.id || "";
+  return {
+    ...item,
+    ticket_id: ticketId,
+    ticketId,
+    created_at: item.created_at || item.submitted_at || item.updated_at || new Date().toISOString(),
+    submitted_at: item.submitted_at || item.created_at || item.updated_at || new Date().toISOString(),
+    updated_at: item.updated_at || item.created_at || item.submitted_at || new Date().toISOString(),
+  };
 }
 
 function saveCachedTickets(tickets) {
@@ -51,8 +64,9 @@ function loadSession() {
 function persistActiveTicket() {
   if (!activeTicket) return;
   const tickets = loadCachedTickets();
+  const activeId = String(activeTicket.ticket_id || activeTicket.ticketId || activeTicket.id || "");
   const nextTickets = tickets.map((item) =>
-    String(item.ticket_id || "") === String(activeTicket.ticket_id || "") ? { ...activeTicket } : item
+    String(item.ticket_id || item.ticketId || item.id || "") === activeId ? { ...normalizeDetailTicket(activeTicket) } : item
   );
   saveCachedTickets(nextTickets);
 }
@@ -197,7 +211,7 @@ function init() {
 
   const ticketId = getTicketIdFromUrl();
   const tickets = loadCachedTickets();
-  const ticket = tickets.find((t) => String(t.ticket_id || "") === String(ticketId || ""));
+  const ticket = tickets.find((t) => String(t.ticket_id || t.ticketId || t.id || "") === String(ticketId || ""));
 
   if (!ticket) {
     activeTicket = null;
@@ -219,7 +233,7 @@ function init() {
     return;
   }
 
-  activeTicket = { ...ticket };
+  activeTicket = normalizeDetailTicket(ticket);
   renderTicket(activeTicket);
   bindAddComment();
 }

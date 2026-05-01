@@ -25,7 +25,6 @@
         <a href="#support-teams" class="admin-nav-link" data-page-link="support-teams">Support Teams</a>
       </nav>
       <div class="admin-sidebar-actions">
-        <a class="ghost-link" href="./index.html">Back to portal</a>
         <button id="adminLogoutBtn" type="button" class="danger-btn">Log Out</button>
       </div>
     </aside>
@@ -41,7 +40,7 @@
 
       <section id="overview" class="admin-page active" aria-labelledby="overviewTitle">
         <article class="section-block" aria-labelledby="overviewTitle">
-          <div class="section-head">
+          <div class="section-head" id="supportTeamsHead">
             <h3 id="overviewTitle">Analytics and Report</h3>
             <div class="range-tabs" role="tablist" aria-label="Date range">
               <button type="button" class="range-tab active" data-range="today">Today</button>
@@ -153,11 +152,78 @@
       <section id="support-teams" class="admin-page" aria-labelledby="teamsTitle">
         <article class="section-block">
           <div class="section-head">
-            <h3 id="teamsTitle">Support Teams</h3>
+            <div>
+              <h3 id="teamsTitle">Team Management</h3>
+              <p class="sub">Manage staff, groups, and permissions.</p>
+            </div>
+            <button class="primary-btn" type="button" id="addTeamBtn">+ Add Team</button>
           </div>
-          <div class="team-grid" id="supportTeamsGrid">
+          <div class="support-tabs">
+            <button type="button" class="support-tab active" data-support-tab="groups">Groups</button>
+            <button type="button" class="support-tab" data-support-tab="permissions">Permissions</button>
+          </div>
+          <div class="support-search-row" id="supportSearchRow">
+            <input id="supportTeamSearch" class="table-select support-search-input" type="search" placeholder="Search staff by name, email, or role..." />
+          </div>
+          <div class="team-grid support-team-grid" id="supportTeamsGrid">
             <article class="team-card">Loading support teams...</article>
           </div>
+          <div class="support-access-panel hidden" id="supportAccessPanel">
+            <div class="section-head">
+              <div>
+                <h3>Access Requests</h3>
+                <p class="sub">Review and manage user access requests.</p>
+              </div>
+              <select id="supportRequestFilter" class="table-select support-request-filter">
+                <option value="all">All Requests</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Requester</th>
+                    <th>Department</th>
+                    <th>Requested Role</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="supportAccessBody">
+                  <tr><td colspan="6">Select a team to view access requests.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="support-team-detail" class="admin-page" aria-labelledby="teamDetailTitle">
+        <article class="section-block">
+          <div class="section-head">
+            <div>
+              <button type="button" class="table-btn" id="backToTeamsBtn">← Back to teams</button>
+              <h3 id="teamDetailTitle">Team Leader</h3>
+              <p class="sub" id="teamDetailSubtitle">Manage selected support team.</p>
+            </div>
+          </div>
+
+          <div class="support-team-detail" id="supportTeamDetail"></div>
+
+          <div class="support-staff-cards-section" id="supportGroupsPanel">
+            <div class="section-head">
+              <h3>Team Staff</h3>
+              <button type="button" class="primary-btn" id="addStaffInTeamBtn">+ Add Staff</button>
+            </div>
+            <div class="staff-card-grid" id="supportStaffCards">
+              <article class="team-card">Select a team to view staff.</article>
+            </div>
+          </div>
+
         </article>
       </section>
     </main>
@@ -170,6 +236,72 @@
           <button type="button" class="admin-modal-close" data-close-admin-modal="true" aria-label="Close">×</button>
         </div>
         <div class="admin-modal-content" id="adminTicketModalContent"></div>
+      </div>
+    </div>
+
+    <div id="addTeamModal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addTeamModalTitle">
+      <div class="admin-modal-backdrop" data-close-add-team-modal="true"></div>
+      <div class="admin-modal-card" role="document">
+        <div class="admin-modal-head">
+          <h3 id="addTeamModalTitle">Add Team</h3>
+          <button type="button" class="admin-modal-close" data-close-add-team-modal="true" aria-label="Close">×</button>
+        </div>
+        <form id="addTeamForm" class="admin-modal-content">
+          <label class="admin-modal-field">
+            <span>Team Name</span>
+            <input id="addTeamName" class="table-select" type="text" placeholder="Example: Customer Success" required />
+            <small class="admin-modal-error" id="addTeamNameError"></small>
+          </label>
+          <label class="admin-modal-field">
+            <span>Team Lead (Optional)</span>
+            <input id="addTeamLead" class="table-select" type="text" placeholder="Example: Emma Davis" />
+            <small class="admin-modal-error" id="addTeamLeadError"></small>
+          </label>
+          <label class="admin-modal-field">
+            <span>Team Lead Email (Optional)</span>
+            <input id="addTeamLeadEmail" class="table-select" type="email" placeholder="lead@company.com" />
+            <small class="admin-modal-error" id="addTeamLeadEmailError"></small>
+          </label>
+          <p class="sub">Temporary frontend mode: team is created in local mock state first, then backend sync is attempted.</p>
+          <div class="table-actions">
+            <button type="button" class="table-btn" data-close-add-team-modal="true">Cancel</button>
+            <button type="submit" class="table-btn update">Create Team</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="addStaffModal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="addStaffModalTitle">
+      <div class="admin-modal-backdrop" data-close-add-staff-modal="true"></div>
+      <div class="admin-modal-card" role="document">
+        <div class="admin-modal-head">
+          <h3 id="addStaffModalTitle">Add Staff to Team</h3>
+          <button type="button" class="admin-modal-close" data-close-add-staff-modal="true" aria-label="Close">×</button>
+        </div>
+        <form id="addStaffForm" class="admin-modal-content">
+          <p id="addStaffTeamHint" class="sub">Create a new support staff profile.</p>
+          <p id="addStaffFormError" class="admin-form-error hidden" role="alert"></p>
+          <label class="admin-modal-field">
+            <span>Staff Name</span>
+            <input id="addStaffName" class="table-select" type="text" placeholder="Example: Noah King" required />
+          </label>
+          <label class="admin-modal-field">
+            <span>Role</span>
+            <input id="addStaffRole" class="table-select" type="text" placeholder="Example: Support Staff" />
+          </label>
+          <label class="admin-modal-field">
+            <span>Email</span>
+            <input id="addStaffEmail" class="table-select" type="email" placeholder="staff@company.com" />
+          </label>
+          <label class="admin-modal-field">
+            <span>Phone (Optional)</span>
+            <input id="addStaffPhone" class="table-select" type="text" placeholder="+1 (555) 000-0000" />
+          </label>
+          <div class="table-actions admin-modal-actions">
+            <button type="button" class="table-btn" data-close-add-staff-modal="true">Cancel</button>
+            <button type="submit" class="table-btn update" id="addStaffSubmitBtn">Add Staff</button>
+          </div>
+        </form>
       </div>
     </div>
 

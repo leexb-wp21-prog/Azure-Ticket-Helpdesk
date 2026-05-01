@@ -124,7 +124,7 @@ Current admin frontend endpoints (planned):
      ]
    }
 
-2. GET /api/admin/tickets?range={today|week|month|year}
+2. GET /api/admin/tickets
    Expected shape:
    {
      "tickets": [
@@ -138,13 +138,13 @@ Current admin frontend endpoints (planned):
      ]
    }
 
-3. GET /api/admin/analytics?range={today|week|month|year}
+3. GET /api/admin/analytics
    Expected shape:
    {
      "summary": {
        "new": number,
        "complete": number,
-       "agents": number,
+      "staff": number,
        "users": number,
        "tickets": number
      },
@@ -153,13 +153,13 @@ Current admin frontend endpoints (planned):
      ]
    }
 
-4. GET /api/admin/support_teams?range={today|week|month|year}
+4. GET /api/admin/support_teams
    Expected shape:
    {
      "teams": [
        {
          "name": string,
-         "activeAgents": number,
+        "activeStaff": number,
          "scope": string
        }
      ]
@@ -168,7 +168,9 @@ Current admin frontend endpoints (planned):
 Frontend behavior now:
 - Uses mock data first for reliable local preview.
 - Automatically switches to backend responses when API_BASE is configured and endpoints respond successfully.
-- Range switch (Today/Week/Month/Year) re-fetches all admin module data.
+- Range switch (Today/Week/Month/Year) is shown in Overview only.
+- Range filtering is computed on frontend using each ticket's first-created timestamp (`created_at`, fallback `submitted_at`).
+- Manage Tickets, Analytics, and Support Teams are not range-gated in frontend routing.
 
 
 8) Admin Overview Interactive Table (Current Temporary Behavior)
@@ -202,8 +204,120 @@ Admin overview latest behavior update:
 - `View` now opens a real ticket detail modal in frontend (no browser alert).
 - `Status` and `Assigned Team` dropdown values are committed only when admin clicks `Update`.
 - `Update` currently persists to temporary frontend state immediately, then attempts backend PATCH if API is available.
+- For local verification, admin mock tickets now include spread timestamps:
+  - 2 tickets created today
+  - 2 additional tickets earlier this week
+  - 2 additional tickets earlier this month
+  - 1 additional ticket earlier this year
+  - 1 ticket outside current year (to validate year filter exclusion)
 
 Backend team action:
 - Return consistent `ticketId` in admin endpoints so PATCH routes can map rows reliably.
 - Add ticket detail payload enrichment for modal (requester contact, timestamps, notes, SLA fields) when ready.
+
+
+9) Admin Team Management - Add Team UI + Error Handling
+-------------------------------------------------------
+Frontend now uses a proper Add Team modal (not browser prompt):
+- Fields: `team name` (required), `team lead` (optional), `team lead email` (optional)
+- Inline validation errors:
+  - team name required
+  - team name duplicate
+  - email format validation (if provided)
+- Clear user feedback via toast when validation fails or create succeeds/falls back
+
+Temporary data behavior (for testing before backend is ready):
+- New team is inserted into local frontend state first (`TEMP_DATA` marker in `frontend/admin.js`)
+- Then frontend attempts backend POST sync
+- If POST fails, team stays available locally for the current session
+
+Backend endpoint for real create:
+1. POST /api/admin/support_teams
+   Request:
+   {
+     "id": string,
+     "name": string,
+     "badge": string,
+     "badgeClass": string,
+     "members": number,
+     "activeTickets": number,
+     "lead": string,
+     "leadRole": string,
+     "email": string,
+     "phone": string,
+     "permissions": number,
+     "stats": { "active": number, "resolved": number, "avgTime": string, "satisfaction": string },
+     "staffMembers": [ { "name": string, "role": string, "email": string, "phone": string, "activeTickets": number } ]
+   }
+   Response:
+   - 201 with created team object (preferred)
+   - 409 on duplicate name
+   - 400 on validation failures (with field-level error payload when possible)
+
+
+9) Team Management Modal Flows (New)
+------------------------------------
+Frontend now supports modal-based Team and Staff creation with inline validation/error handling.
+
+Implemented frontend calls:
+1. POST /api/admin/support_teams
+   - Used by "Add Team" in Team Management
+
+2. POST /api/admin/support_teams/{teamId}/staff
+   - Used by "Add Staff" from Team Details page
+   - Triggered from a form modal (no browser prompt now)
+
+Temporary frontend behavior (for smooth demo/testing):
+- If POST fails or backend is unavailable, new team/staff is still inserted into in-memory state
+- UI immediately updates cards/counters and shows warning toast ("added locally")
+- This keeps UI testable while backend endpoints are in progress
+
+Temporary request payload examples:
+
+POST /api/admin/support_teams
+{
+  "id": "customer-success",
+  "name": "Customer Success",
+  "badge": "C",
+  "badgeClass": "blue",
+  "members": 1,
+  "activeTickets": 0,
+  "lead": "Emma Davis",
+  "leadRole": "Support Staff",
+  "email": "emma.davis@company.com",
+  "phone": "+1 (555) 000-0000",
+  "permissions": 1,
+  "stats": { "active": 0, "resolved": 0, "avgTime": "N/A", "satisfaction": "N/A" },
+  "staffMembers": [
+    {
+      "name": "Emma Davis",
+      "role": "Support Staff",
+      "email": "emma.davis@company.com",
+      "phone": "+1 (555) 000-0000",
+      "activeTickets": 0
+    }
+  ]
+}
+
+POST /api/admin/support_teams/{teamId}/staff
+{
+  "name": "Noah King",
+  "role": "Support Staff",
+  "email": "noah.king@company.com",
+  "phone": "+1 (555) 000-0000",
+  "activeTickets": 0
+}
+
+Recommended backend response for both endpoints:
+{
+  "ok": true,
+  "message": "Created",
+  "data": { ...created entity... }
+}
+
+Error shape expected by frontend (for user-friendly inline message):
+{
+  "ok": false,
+  "message": "Validation failed: email already in use"
+}
 

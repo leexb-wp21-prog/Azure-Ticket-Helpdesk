@@ -428,6 +428,19 @@ function renderTickets(items) {
   });
 }
 
+function normalizeTicketRecord(source) {
+  const item = source || {};
+  const ticketId = item.ticket_id || item.ticketId || item.id || "";
+  return {
+    ...item,
+    ticket_id: ticketId,
+    ticketId,
+    submitted_at: item.submitted_at || item.created_at || item.updated_at || currentIsoTime(),
+    created_at: item.created_at || item.submitted_at || item.updated_at || currentIsoTime(),
+    updated_at: item.updated_at || item.submitted_at || item.created_at || currentIsoTime(),
+  };
+}
+
 function applyStatusFilter() {
   const activeStatus = tabToStatus[activeStatusTab] || "All";
   const q = sanitize(ticketSearch?.value || "").toLowerCase();
@@ -496,12 +509,12 @@ function showSubmittedTicketTemporarily(ticket, requesterEmail) {
   if (!ticket) return;
   // REMOVE_BEFORE_BACKEND_READY: Temporary local preview bridge.
   // REMOVE_BEFORE_BACKEND_READY: Makes new ticket visible in "My Tickets" immediately.
-  const normalized = {
+  const normalized = normalizeTicketRecord({
     ...ticket,
     email: ticket.email || requesterEmail || "",
     updated_at: ticket.updated_at || ticket.submitted_at || currentIsoTime(),
     submitted_at: ticket.submitted_at || currentIsoTime(),
-  };
+  });
   const withoutSameId = lastLoadedTickets.filter((t) => String(t.ticket_id || "") !== String(normalized.ticket_id || ""));
   lastLoadedTickets = [normalized, ...withoutSameId];
   persistTicketCache(lastLoadedTickets);
@@ -555,6 +568,12 @@ function closeModal(modalEl) {
 }
 
 function openTicketDetails(ticket) {
+  const safeTicketId = String(ticket?.ticket_id || ticket?.ticketId || ticket?.id || "");
+  const normalizedTicket = {
+    ...ticket,
+    ticket_id: safeTicketId,
+    ticketId: safeTicketId,
+  };
   const status = mapSafeStatus(ticket.status);
   const prRaw = String(ticket.priority || "Medium");
   const pLower = prRaw.toLowerCase();
@@ -580,7 +599,7 @@ function openTicketDetails(ticket) {
     ticketInlineContent.classList.remove("hidden");
 
     inlineDetailSubject.textContent = ticket.subject || "No subject";
-    inlineDetailTicketId.textContent = ticket.ticket_id ? `#${ticket.ticket_id}` : "";
+    inlineDetailTicketId.textContent = safeTicketId ? `#${safeTicketId}` : "";
     inlineDetailStatus.className = `badge ${statusBadgeClass(status)}`;
     inlineDetailStatus.textContent = prettyStatus(status);
     inlineDetailPriority.className = `detail-priority-pill priority-${normalized}`;
@@ -589,7 +608,7 @@ function openTicketDetails(ticket) {
     inlineDetailLocation.textContent = `Location: ${ticket.location || "Not provided"}`;
     inlineDetailUpdated.textContent = `Updated: ${formatDateTime(updatedAt)}`;
     inlineDetailDescription.textContent =
-      ticket.description || "No additional description provided.";
+      normalizedTicket.description || "No additional description provided.";
   }
 
   // User requested removing ticket-detail modal from Preview Ticket flow.
@@ -597,12 +616,12 @@ function openTicketDetails(ticket) {
   const hasInlinePreview = Boolean(ticketInlinePanel);
   const isDesktop = window.matchMedia("(min-width: 981px)").matches;
   if (!hasInlinePreview || !isDesktop) {
-    const ticketId = encodeURIComponent(ticket.ticket_id || "");
+    const ticketId = encodeURIComponent(safeTicketId);
     window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
   }
   if (btnInlineViewDetailPage) {
     btnInlineViewDetailPage.onclick = () => {
-      const ticketId = encodeURIComponent(ticket.ticket_id || "");
+      const ticketId = encodeURIComponent(safeTicketId);
       window.location.href = `./ticket-detail.html?ticketId=${ticketId}`;
     };
   }
@@ -1142,7 +1161,7 @@ trackForm.addEventListener("submit", async (event) => {
   trackBtn.textContent = "Searching...";
   try {
     const data = await getTicketsByEmail(email);
-    lastLoadedTickets = Array.isArray(data.tickets) ? data.tickets : [];
+    lastLoadedTickets = Array.isArray(data.tickets) ? data.tickets.map(normalizeTicketRecord) : [];
     persistTicketCache(lastLoadedTickets);
     applyStatusFilter();
   } catch (error) {
@@ -1439,7 +1458,7 @@ if (bootSession?.email) {
   (async () => {
     try {
       const data = await getTicketsByEmail(bootSession.email);
-      lastLoadedTickets = Array.isArray(data?.tickets) ? data.tickets : [];
+      lastLoadedTickets = Array.isArray(data?.tickets) ? data.tickets.map(normalizeTicketRecord) : [];
       persistTicketCache(lastLoadedTickets);
       applyStatusFilter();
     } catch {

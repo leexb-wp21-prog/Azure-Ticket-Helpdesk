@@ -29,10 +29,20 @@
             <small class="error" id="registerEmailError"></small>
           </label>
           <label class="input-shell">
+            <span>Role</span>
+            <select id="registerRole" required>
+              <option value="user">Student</option>
+              <option value="staff">Staff</option>
+              <option value="admin">Admin</option>
+            </select>
+            <small class="error" id="registerRoleError"></small>
+          </label>
+          <label class="input-shell">
             <span>Password</span>
             <input id="registerPassword" type="password" placeholder="Create password" required autocomplete="new-password" />
             <small class="error" id="registerPasswordError"></small>
           </label>
+          <p class="entra-subtitle hidden" id="registerApprovalNote" aria-live="polite"></p>
 
           <button type="submit" class="signin-btn">Register</button>
 
