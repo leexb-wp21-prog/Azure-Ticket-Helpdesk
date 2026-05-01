@@ -132,6 +132,7 @@ if (loginForm) {
   const usernameEl = document.getElementById("loginUsername");
   const passwordEl = document.getElementById("loginPassword");
   const loginMicrosoftBtn = document.getElementById("loginMicrosoftBtn");
+  const loginAdminTestBtn = document.getElementById("loginAdminTestBtn");
   bindInputShell(usernameEl);
   bindInputShell(passwordEl);
   initCuteBear({
@@ -173,6 +174,18 @@ if (loginForm) {
 
   loginMicrosoftBtn?.addEventListener("click", () => {
     handleMicrosoftAuth("user");
+  });
+
+  // REMOVE_IN_PRODUCTION: Temporary bypass for admin UI testing.
+  loginAdminTestBtn?.addEventListener("click", () => {
+    const session = {
+      email: "admin@campus.edu",
+      role: "admin",
+      name: "Admin Test User",
+      prefs: { notifEmail: true, notifInApp: true },
+    };
+    saveSession(session);
+    toDashboard(session);
   });
 }
 

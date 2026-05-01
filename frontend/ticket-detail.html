@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./ticket-view-shared.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -81,12 +82,13 @@
 
       <section class="detail-block">
         <h3>Add Comment</h3>
-        <textarea rows="4" placeholder="Add your comment or update..." disabled></textarea>
+        <textarea id="pageNewComment" rows="4" placeholder="Add your comment or update..."></textarea>
         <div class="detail-actions">
-          <button type="button" disabled>Add Comment</button>
+          <button id="pageAddCommentBtn" type="button">Add Comment</button>
         </div>
       </section>
     </main>
+    <script src="./ticket-view-shared.js" defer></script>
     <script src="./ticket-detail.js" defer></script>
   </body>
   </html>

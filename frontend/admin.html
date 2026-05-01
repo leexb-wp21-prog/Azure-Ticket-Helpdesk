@@ -10,6 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./ticket-view-shared.css" />
     <link rel="stylesheet" href="./admin.css" />
   </head>
   <body>
@@ -21,7 +22,6 @@
       <nav class="admin-nav" aria-label="Admin sections">
         <a href="#overview" class="admin-nav-link active" data-page-link="overview">Overview</a>
         <a href="#manage-tickets" class="admin-nav-link" data-page-link="manage-tickets">Manage Tickets</a>
-        <a href="#analytics-report" class="admin-nav-link" data-page-link="analytics-report">Analytics and Report</a>
         <a href="#support-teams" class="admin-nav-link" data-page-link="support-teams">Support Teams</a>
       </nav>
       <div class="admin-sidebar-actions">
@@ -37,18 +37,18 @@
           <h2>Admin&rsquo;s Dashboard</h2>
           <p class="sub" id="adminSessionLabel">Signed in as admin</p>
         </div>
-        <div class="range-tabs" role="tablist" aria-label="Date range">
-          <button type="button" class="range-tab active" data-range="today">Today</button>
-          <button type="button" class="range-tab" data-range="week">This Week</button>
-          <button type="button" class="range-tab" data-range="month">This Month</button>
-          <button type="button" class="range-tab" data-range="year">This Year</button>
-        </div>
       </header>
 
       <section id="overview" class="admin-page active" aria-labelledby="overviewTitle">
         <article class="section-block" aria-labelledby="overviewTitle">
           <div class="section-head">
-            <h3 id="overviewTitle">Overview</h3>
+            <h3 id="overviewTitle">Analytics and Report</h3>
+            <div class="range-tabs" role="tablist" aria-label="Date range">
+              <button type="button" class="range-tab active" data-range="today">Today</button>
+              <button type="button" class="range-tab" data-range="week">This Week</button>
+              <button type="button" class="range-tab" data-range="month">This Month</button>
+              <button type="button" class="range-tab" data-range="year">This Year</button>
+            </div>
           </div>
 
           <div class="stats-grid four-col">
@@ -99,14 +99,37 @@
           </article>
         </article>
 
-        <article class="section-block" aria-labelledby="overviewTicketsTitle">
+      </section>
+
+      <section id="manage-tickets" class="admin-page" aria-labelledby="manageTitle">
+        <article class="section-block">
           <div class="section-head">
-            <h3 id="overviewTicketsTitle">All Tickets</h3>
+            <h3 id="manageTitle">Manage Tickets</h3>
+            <div class="bulk-assign-controls">
+              <select id="bulkStatusSelect" class="table-select">
+                <option value="">Set status (optional)</option>
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+              <select id="bulkTeamSelect" class="table-select">
+                <option value="">Assign team (optional)</option>
+                <option value="Network Team">Network Team</option>
+                <option value="Software Team">Software Team</option>
+                <option value="Account Team">Account Team</option>
+                <option value="Hardware Team">Hardware Team</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Application Support">Application Support</option>
+                <option value="Facilities">Facilities</option>
+              </select>
+              <button id="bulkAssignBtn" class="primary-btn" type="button">Apply to Selected</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
+                  <th><input id="manageSelectAll" type="checkbox" aria-label="Select all tickets" /></th>
                   <th>Ticket ID</th>
                   <th>User</th>
                   <th>Issue</th>
@@ -117,71 +140,12 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="overviewTicketsBody">
-                <tr>
-                  <td colspan="8">Loading tickets...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section id="manage-tickets" class="admin-page" aria-labelledby="manageTitle">
-        <article class="section-block">
-          <div class="section-head">
-            <h3 id="manageTitle">Manage Tickets</h3>
-            <button class="primary-btn" type="button">Bulk Assign</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ticket ID</th>
-                  <th>Issue</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                  <th>Assigned Team</th>
-                </tr>
-              </thead>
               <tbody id="manageTicketsBody">
                 <tr>
-                  <td colspan="5">Loading manage tickets...</td>
+                  <td colspan="9">Loading tickets...</td>
                 </tr>
               </tbody>
             </table>
-          </div>
-        </article>
-      </section>
-
-      <section id="analytics-report" class="admin-page" aria-labelledby="analyticsTitle">
-        <article class="section-block">
-          <div class="section-head">
-            <h3 id="analyticsTitle">Analytics and Report</h3>
-          </div>
-          <div class="stats-grid">
-            <article class="stat-card">
-              <p class="label">New</p>
-              <p class="value" id="analyticsNewCount">0</p>
-            </article>
-            <article class="stat-card">
-              <p class="label">Complete</p>
-              <p class="value" id="analyticsCompleteCount">0</p>
-            </article>
-            <article class="stat-card">
-              <p class="label">Agents</p>
-              <p class="value" id="analyticsAgentsCount">0</p>
-            </article>
-            <article class="stat-card">
-              <p class="label">Users</p>
-              <p class="value" id="analyticsUsersCount">0</p>
-            </article>
-            <article class="stat-card">
-              <p class="label">Tickets</p>
-              <p class="value" id="analyticsTicketsCount">0</p>
-            </article>
-          </div>
-          <div class="analytics-grid" id="analyticsCards">
           </div>
         </article>
       </section>
@@ -210,6 +174,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="./ticket-view-shared.js" defer></script>
     <script src="./admin.js" defer></script>
   </body>
 </html>

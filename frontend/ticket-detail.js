@@ -1,10 +1,9 @@
 const ticketCacheStorageKey = "quickaid-ticket-cache-v1";
-
-function formatDateTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleString();
-}
+const sessionKey = "quickaid-session-v1";
+let activeTicket = null;
+const sharedTicketView = window.QuickAidTicketView || {};
+const escapeHtml = sharedTicketView.escapeHtml || ((value) => String(value || ""));
+const formatDateTime = sharedTicketView.formatDateTime || ((value) => String(value || "-"));
 
 function statusBadgeClass(status) {
   if (!status) return "badge-new";
@@ -18,9 +17,10 @@ function prettyStatus(status) {
 }
 
 function priorityClass(priority) {
-  const p = String(priority || "Medium").toLowerCase();
-  if (p === "low") return "priority-low";
-  if (p === "high" || p === "urgent") return "priority-high";
+  const fallback = String(priority || "Medium").toLowerCase();
+  if (sharedTicketView.priorityClass) return sharedTicketView.priorityClass(priority);
+  if (fallback === "low") return "priority-low";
+  if (fallback === "high" || fallback === "urgent") return "priority-high";
   return "priority-medium";
 }
 
@@ -33,6 +33,28 @@ function loadCachedTickets() {
   } catch {
     return [];
   }
+}
+
+function saveCachedTickets(tickets) {
+  localStorage.setItem(ticketCacheStorageKey, JSON.stringify(Array.isArray(tickets) ? tickets : []));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(sessionKey);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistActiveTicket() {
+  if (!activeTicket) return;
+  const tickets = loadCachedTickets();
+  const nextTickets = tickets.map((item) =>
+    String(item.ticket_id || "") === String(activeTicket.ticket_id || "") ? { ...activeTicket } : item
+  );
+  saveCachedTickets(nextTickets);
 }
 
 function getTicketIdFromUrl() {
@@ -110,48 +132,62 @@ function renderTicket(ticket) {
 
   const commentItems = Array.isArray(ticket.comments) ? ticket.comments : [];
   if (commentsTitle) commentsTitle.textContent = `Comments (${commentItems.length})`;
-  comments.innerHTML = "";
-  if (!commentItems.length) {
-    const li = document.createElement("li");
-    li.textContent = "No comments yet.";
-    comments.appendChild(li);
-  } else {
-    commentItems.forEach((c) => {
-      const li = document.createElement("li");
-      li.className = "comment-bubble";
-      li.innerHTML = `
-        <div class="comment-head">
-          <strong>${c.by || "Support"}</strong>
-          <span class="muted">${formatDateTime(c.at)}</span>
-        </div>
-        <div class="comment-body">${c.text || ""}</div>
-      `;
-      comments.appendChild(li);
-    });
-  }
+  comments.innerHTML = sharedTicketView.renderComments
+    ? sharedTicketView.renderComments(commentItems)
+    : '<li class="muted">No comments yet.</li>';
 
   const timelineItems = Array.isArray(ticket.timeline) ? ticket.timeline : [];
-  timeline.innerHTML = "";
-  if (!timelineItems.length) {
-    const li = document.createElement("li");
-    li.className = "muted";
-    li.textContent = "No timeline entries.";
-    timeline.appendChild(li);
-  } else {
-    timelineItems.forEach((entry) => {
-      const li = document.createElement("li");
-      li.className = "timeline-item activity-item";
-      const actor = entry.by || entry.actor || (String(entry.label || "").toLowerCase().includes("created") ? (ticket.name || "Requester") : "System");
-      li.innerHTML = `
-        <div class="timeline-dot"></div>
-        <div class="timeline-body">
-          <strong>${entry.label || "Event"}</strong>
-          <div class="muted">${actor} • ${formatDateTime(entry.at)}</div>
-        </div>
-      `;
-      timeline.appendChild(li);
-    });
-  }
+  const normalizedTimeline = timelineItems.map((entry) => ({
+    ...entry,
+    by:
+      entry.by ||
+      entry.actor ||
+      (String(entry.label || "").toLowerCase().includes("created") ? ticket.name || "Requester" : "System"),
+  }));
+  timeline.innerHTML = sharedTicketView.renderTimeline
+    ? sharedTicketView.renderTimeline(normalizedTimeline)
+    : '<li class="muted">No timeline entries.</li>';
+}
+
+function bindAddComment() {
+  const input = document.getElementById("pageNewComment");
+  const addButton = document.getElementById("pageAddCommentBtn");
+  if (!(input instanceof HTMLTextAreaElement) || !(addButton instanceof HTMLButtonElement)) return;
+
+  const setPending = (isPending) => {
+    addButton.disabled = isPending;
+    addButton.textContent = isPending ? "Adding..." : "Add Comment";
+  };
+
+  const submitComment = () => {
+    if (!activeTicket) return;
+    const text = input.value.trim();
+    if (!text) return;
+    const session = loadSession();
+    const commenter = session?.name || session?.email || "You";
+    const timestamp = new Date().toISOString();
+    const nextComment = { by: commenter, text, at: timestamp };
+    const nextTimeline = { label: "Comment added", by: commenter, at: timestamp };
+
+    setPending(true);
+    const existingComments = Array.isArray(activeTicket.comments) ? activeTicket.comments : [];
+    const existingTimeline = Array.isArray(activeTicket.timeline) ? activeTicket.timeline : [];
+    activeTicket.comments = [...existingComments, nextComment];
+    activeTicket.timeline = [...existingTimeline, nextTimeline];
+    activeTicket.updated_at = timestamp;
+    persistActiveTicket();
+    renderTicket(activeTicket);
+    input.value = "";
+    setPending(false);
+  };
+
+  addButton.addEventListener("click", submitComment);
+  input.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      submitComment();
+    }
+  });
 }
 
 function init() {
@@ -164,6 +200,7 @@ function init() {
   const ticket = tickets.find((t) => String(t.ticket_id || "") === String(ticketId || ""));
 
   if (!ticket) {
+    activeTicket = null;
     renderTicket({
       ticket_id: ticketId || "N/A",
       subject: "Ticket not found",
@@ -174,10 +211,17 @@ function init() {
       timeline: [],
       attachments: [],
     });
+    const input = document.getElementById("pageNewComment");
+    const addButton = document.getElementById("pageAddCommentBtn");
+    if (input instanceof HTMLTextAreaElement) input.disabled = true;
+    if (addButton instanceof HTMLButtonElement) addButton.disabled = true;
+    bindAddComment();
     return;
   }
 
-  renderTicket(ticket);
+  activeTicket = { ...ticket };
+  renderTicket(activeTicket);
+  bindAddComment();
 }
 
 init();
