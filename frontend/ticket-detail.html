@@ -82,10 +82,13 @@
 
       <section class="detail-block">
         <h3>Add Comment</h3>
-        <textarea id="pageNewComment" rows="4" placeholder="Add your comment or update..."></textarea>
-        <div class="detail-actions">
-          <button id="pageAddCommentBtn" type="button">Add Comment</button>
-        </div>
+        <form id="pageCommentForm">
+          <textarea id="pageNewComment" rows="4" placeholder="Add your comment or update..."></textarea>
+          <p id="pageCommentFeedback" class="muted" role="status" aria-live="polite"></p>
+          <div class="detail-actions">
+            <button id="pageAddCommentBtn" type="submit">Add Comment</button>
+          </div>
+        </form>
       </section>
     </main>
     <script src="./ticket-view-shared.js" defer></script>

@@ -164,9 +164,23 @@ function renderTicket(ticket) {
 }
 
 function bindAddComment() {
+  const form = document.getElementById("pageCommentForm");
   const input = document.getElementById("pageNewComment");
   const addButton = document.getElementById("pageAddCommentBtn");
-  if (!(input instanceof HTMLTextAreaElement) || !(addButton instanceof HTMLButtonElement)) return;
+  const feedback = document.getElementById("pageCommentFeedback");
+  if (
+    !(form instanceof HTMLFormElement) ||
+    !(input instanceof HTMLTextAreaElement) ||
+    !(addButton instanceof HTMLButtonElement)
+  ) {
+    return;
+  }
+
+  const setFeedback = (message, isError = false) => {
+    if (!(feedback instanceof HTMLElement)) return;
+    feedback.textContent = message;
+    feedback.style.color = isError ? "#a93345" : "";
+  };
 
   const setPending = (isPending) => {
     addButton.disabled = isPending;
@@ -174,9 +188,16 @@ function bindAddComment() {
   };
 
   const submitComment = () => {
-    if (!activeTicket) return;
+    if (!activeTicket) {
+      setFeedback("Unable to add comment because ticket details were not found.", true);
+      return;
+    }
     const text = input.value.trim();
-    if (!text) return;
+    if (!text) {
+      setFeedback("Please enter a comment before submitting.", true);
+      input.focus();
+      return;
+    }
     const session = loadSession();
     const commenter = session?.name || session?.email || "You";
     const timestamp = new Date().toISOString();
@@ -192,10 +213,14 @@ function bindAddComment() {
     persistActiveTicket();
     renderTicket(activeTicket);
     input.value = "";
+    setFeedback("Comment added.");
     setPending(false);
   };
 
-  addButton.addEventListener("click", submitComment);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitComment();
+  });
   input.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
@@ -227,8 +252,10 @@ function init() {
     });
     const input = document.getElementById("pageNewComment");
     const addButton = document.getElementById("pageAddCommentBtn");
+    const feedback = document.getElementById("pageCommentFeedback");
     if (input instanceof HTMLTextAreaElement) input.disabled = true;
     if (addButton instanceof HTMLButtonElement) addButton.disabled = true;
+    if (feedback instanceof HTMLElement) feedback.textContent = "Comments are disabled for missing tickets.";
     bindAddComment();
     return;
   }

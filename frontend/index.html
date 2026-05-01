@@ -92,11 +92,11 @@
       </div>
 
       <nav class="sidebar-nav" aria-label="Sidebar">
-        <button type="button" class="sidebar-item" data-active="false">
+        <button type="button" id="sidebarDashboardBtn" class="sidebar-item sidebar-item-active" data-active="true">
           Dashboard <span class="sidebar-badge">4</span>
         </button>
         <a id="btnAdminPanel" class="sidebar-item hidden" href="./admin.html">Admin Panel</a>
-        <button type="button" class="sidebar-item">Knowledge Base</button>
+        <button type="button" id="sidebarKnowledgeBtn" class="sidebar-item">Knowledge Base</button>
         <button type="button" class="sidebar-item">Alerts</button>
       </nav>
 
@@ -486,6 +486,21 @@
               </div>
             </div>
           </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="knowledgeBasePanel" aria-labelledby="knowledgeBasePanelTitle">
+        <div class="panel-head">
+          <div class="panel-head-row">
+            <h2 id="knowledgeBasePanelTitle">Knowledge Base</h2>
+            <!-- REMOVE_IN_PRODUCTION: reset feedback utility for QA retesting. -->
+            <button type="button" class="ghost" id="btnResetKbFeedback">Reset Feedback (Testing)</button>
+          </div>
+          <p>Browse self-help guides before submitting a support request.</p>
+        </div>
+        <div class="kb-suggestions" aria-live="polite">
+          <p class="helper-title">Frequently Asked Questions</p>
+          <ul id="kbPageList"></ul>
         </div>
       </section>
     </main>

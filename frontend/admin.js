@@ -274,7 +274,7 @@ const mockAdminData = {
     teams: [
       {
         id: "technical",
-        name: "Technical Support",
+        name: "IT Services",
         badge: "T",
         badgeClass: "blue",
         members: 4,
@@ -294,7 +294,7 @@ const mockAdminData = {
       },
       {
         id: "billing",
-        name: "Billing Support",
+        name: "Finance Office",
         badge: "B",
         badgeClass: "green",
         members: 2,
@@ -312,7 +312,7 @@ const mockAdminData = {
       },
       {
         id: "premium",
-        name: "Premium Support",
+        name: "Academic Affairs",
         badge: "P",
         badgeClass: "purple",
         members: 2,
@@ -330,7 +330,7 @@ const mockAdminData = {
       },
       {
         id: "sales",
-        name: "Sales Support",
+        name: "Student Affairs",
         badge: "S",
         badgeClass: "orange",
         members: 1,
@@ -347,10 +347,10 @@ const mockAdminData = {
       },
     ],
     accessRequests: [
-      { id: "AR-001", teamId: "technical", requester: "Emily Chen", email: "emily.chen@company.com", department: "Sales", role: "Staff", status: "pending", date: "Feb 3, 2026, 9:15 AM" },
-      { id: "AR-002", teamId: "billing", requester: "Michael Brown", email: "michael.brown@company.com", department: "Finance", role: "Staff", status: "pending", date: "Feb 2, 2026, 2:30 PM" },
-      { id: "AR-003", teamId: "technical", requester: "Lisa Anderson", email: "lisa.anderson@company.com", department: "IT Support", role: "Admin", status: "pending", date: "Feb 1, 2026, 11:20 AM" },
-      { id: "AR-004", teamId: "sales", requester: "Robert Taylor", email: "robert.taylor@company.com", department: "HR", role: "Staff", status: "approved", date: "Jan 30, 2026, 10:00 AM", reviewedBy: "Admin" },
+      { id: "AR-001", teamId: "technical", requester: "Emily Chen", email: "emily.chen@company.com", department: "IT Services", role: "Staff", status: "pending", date: "Feb 3, 2026, 9:15 AM" },
+      { id: "AR-002", teamId: "billing", requester: "Michael Brown", email: "michael.brown@company.com", department: "Finance Office", role: "Staff", status: "pending", date: "Feb 2, 2026, 2:30 PM" },
+      { id: "AR-003", teamId: "premium", requester: "Lisa Anderson", email: "lisa.anderson@company.com", department: "Academic Affairs", role: "Admin", status: "pending", date: "Feb 1, 2026, 11:20 AM" },
+      { id: "AR-004", teamId: "sales", requester: "Robert Taylor", email: "robert.taylor@company.com", department: "Student Affairs", role: "Staff", status: "approved", date: "Jan 30, 2026, 10:00 AM", reviewedBy: "Admin" },
       { id: "AR-005", teamId: "premium", requester: "Jennifer Lee", email: "jennifer.lee@external.com", department: "External Contractor", role: "Staff", status: "rejected", date: "Jan 28, 2026, 1:45 PM", reviewedBy: "Admin" },
     ],
   },
@@ -1596,7 +1596,7 @@ function renderSupportTeams(data) {
         <td class="request-actions">
           ${
             activeSupportTab === "permissions" && String(req.status) === "pending"
-              ? `<button type="button" class="link-btn approve" data-request-action="approve" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}" data-request-team-id="${escapeHtml(req.teamId || "")}" data-requester="${escapeHtml(req.requester || "")}">Approve</button><button type="button" class="link-btn reject" data-request-action="reject" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}" data-request-team-id="${escapeHtml(req.teamId || "")}" data-requester="${escapeHtml(req.requester || "")}">Reject</button>`
+              ? `<button type="button" class="link-btn approve" data-request-action="approve" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Approve</button><button type="button" class="link-btn reject" data-request-action="reject" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Reject</button>`
               : `<span class="sub">${escapeHtml(req.reviewedBy ? `Reviewed by ${req.reviewedBy}` : "No actions")}</span>`
           }
         </td>
@@ -1730,19 +1730,11 @@ supportAccessBody?.addEventListener("click", (event) => {
   const requestId = String(target.dataset.requestId || "");
   const requestEmail = String(target.dataset.requestEmail || "").toLowerCase();
   const requestRole = String(target.dataset.requestRole || "").toLowerCase();
-  const requestTeamId = String(target.dataset.requestTeamId || "");
-  const requesterName = String(target.dataset.requester || "Staff User");
   if (!requestEmail || !requestRole) return;
 
   const nextStatus = action === "approve" ? "approved" : "rejected";
   const reviewer = session?.email || "Admin";
   const currentState = supportTeamsState || mockAdminData.supportTeams;
-  const matchedRequest = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).find((req) => {
-    const sameId = requestId && String(req.id || "") === requestId;
-    const sameIdentity =
-      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
-    return sameId || sameIdentity;
-  });
   const nextAccess = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).map((req) => {
     const sameId = requestId && String(req.id || "") === requestId;
     const sameIdentity =
@@ -1750,39 +1742,7 @@ supportAccessBody?.addEventListener("click", (event) => {
     if (!sameId && !sameIdentity) return req;
     return { ...req, status: nextStatus, reviewedBy: reviewer };
   });
-  let nextTeams = Array.isArray(currentState?.teams) ? [...currentState.teams] : [];
-  if (nextStatus === "approved" && (requestRole === "staff" || requestRole === "admin")) {
-    const targetTeamId = requestTeamId || String(matchedRequest?.teamId || activeSupportTeamId || "");
-    const teamIndex = nextTeams.findIndex((team) => String(team.id || "") === targetTeamId);
-    if (teamIndex >= 0) {
-      const team = nextTeams[teamIndex];
-      const existingStaff = Array.isArray(team.staffMembers) ? [...team.staffMembers] : [];
-      const hasStaff = existingStaff.some((staff) => String(staff.email || "").toLowerCase() === requestEmail);
-      const roleLabel = requestRole === "admin" ? "Admin (Team Lead)" : "Support Staff";
-      if (!hasStaff) {
-        existingStaff.push({
-          name: requesterName || requestEmail.split("@")[0],
-          role: roleLabel,
-          email: requestEmail,
-          phone: "-",
-          activeTickets: 0,
-        });
-      }
-      const nextTeam = {
-        ...team,
-        staffMembers: existingStaff,
-        members: existingStaff.length,
-      };
-      // Team can only have one lead, approved admin becomes/updates the lead record.
-      if (requestRole === "admin") {
-        nextTeam.lead = requesterName || requestEmail.split("@")[0];
-        nextTeam.leadRole = "Team Lead (Admin)";
-        nextTeam.email = requestEmail;
-      }
-      nextTeams[teamIndex] = nextTeam;
-    }
-  }
-  supportTeamsState = { ...currentState, accessRequests: nextAccess, teams: nextTeams };
+  supportTeamsState = { ...currentState, accessRequests: nextAccess };
 
   const localRequests = loadLocalAccessRequests().map((req) => {
     const sameId = requestId && String(req.id || "") === requestId;
@@ -1878,10 +1838,8 @@ document.querySelectorAll(".support-tab[data-support-tab]").forEach((tab) => {
 
 const backToTeamsBtn = document.getElementById("backToTeamsBtn");
 backToTeamsBtn?.addEventListener("click", () => {
-  activeSupportTab = "groups";
   activateAdminPage("support-teams");
   window.history.replaceState(null, "", "#support-teams");
-  renderSupportTeams(supportTeamsState || mockAdminData.supportTeams);
 });
 
 const initialHashPage = window.location.hash.replace("#", "");

@@ -77,12 +77,13 @@ function toDashboard(session) {
 }
 
 function createAccessRequestFromAccount(account) {
+  const normalizedRole = normalizeRole(account?.role);
   return {
     teamId: "technical",
     requester: account.name || "Requester",
     email: account.email,
-    department: "General",
-    role: account.role === "admin" ? "Admin" : "Staff",
+    department: "IT Services",
+    role: normalizedRole === "admin" ? "Admin" : "Staff",
     status: "pending",
     date: new Date().toLocaleString(),
     created_at: new Date().toISOString(),
@@ -339,7 +340,7 @@ if (registerForm) {
       const exists = requests.some(
         (item) =>
           normalizeEmail(item.email) === normalizeEmail(account.email) &&
-          String(item.role || "").toLowerCase() === (role === "admin" ? "admin" : "staff") &&
+          String(item.role || "").toLowerCase() === role &&
           String(item.status || "").toLowerCase() === "pending"
       );
       if (!exists) {
