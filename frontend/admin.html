@@ -114,22 +114,39 @@
             </div>
           </div>
 
-          <div class="stats-grid four-col">
+          <div class="stats-grid three-col overview-musthave-grid">
             <article class="stat-card">
               <p class="label">Total Tickets</p>
               <p class="value" id="overviewTotalTickets">0</p>
+              <p class="meta">System usage signal</p>
             </article>
             <article class="stat-card">
-              <p class="label">Open</p>
+              <p class="label">Avg Resolution Time</p>
+              <p class="value" id="overviewAvgResolutionTime">0h</p>
+              <p class="meta">Most important KPI</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">SLA Response Time</p>
+              <p class="value" id="overviewSlaResponse">0%</p>
+              <p class="meta">First response within 2h</p>
+            </article>
+          </div>
+
+          <div class="overview-kpi-grid three-col">
+            <article class="stat-card">
+              <p class="label">Open Tickets</p>
               <p class="value" id="overviewOpenTickets">0</p>
+              <p class="meta">Needs immediate action</p>
+            </article>
+            <article class="stat-card">
+              <p class="label">Resolved Tickets</p>
+              <p class="value" id="overviewResolvedTickets">0</p>
+              <p class="meta">Support team output</p>
             </article>
             <article class="stat-card">
               <p class="label">In Progress</p>
               <p class="value" id="overviewInProgressTickets">0</p>
-            </article>
-            <article class="stat-card">
-              <p class="label">Resolved</p>
-              <p class="value" id="overviewResolvedTickets">0</p>
+              <p class="meta">Current workload</p>
             </article>
           </div>
 
@@ -154,6 +171,12 @@
             </article>
           </div>
 
+          <article class="analytic-card">
+            <h4>Top Department Performance</h4>
+            <p class="meta">Volume + speed benchmark by department</p>
+            <div class="top-category-performance" id="overviewTopCategoryPerformance"></div>
+          </article>
+
           <article class="analytic-card full-width">
             <h4>Weekly Ticket Trends</h4>
             <div class="line-chart" aria-hidden="true">
@@ -168,24 +191,9 @@
         <article class="section-block">
           <div class="section-head">
             <h3 id="manageTitle">Manage Tickets</h3>
-            <div class="bulk-assign-controls">
-              <select id="bulkStatusSelect" class="table-select">
-                <option value="">Set status (optional)</option>
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </select>
-              <select id="bulkTeamSelect" class="table-select">
-                <option value="">Assign team (optional)</option>
-                <option value="Network Team">Network Team</option>
-                <option value="Software Team">Software Team</option>
-                <option value="Account Team">Account Team</option>
-                <option value="Hardware Team">Hardware Team</option>
-                <option value="Infrastructure">Infrastructure</option>
-                <option value="Application Support">Application Support</option>
-                <option value="Facilities">Facilities</option>
-              </select>
-              <button id="bulkAssignBtn" class="primary-btn" type="button">Apply to Selected</button>
+            <div class="manage-toolbar">
+              <span class="manage-selection-count" id="manageSelectionCount">No tickets selected</span>
+              <button id="openBulkEditBtn" class="primary-btn" type="button" disabled>Bulk Edit Selected</button>
             </div>
           </div>
           <div class="table-wrap">
@@ -227,7 +235,7 @@
             <button type="button" class="support-tab" data-support-tab="permissions">Permissions</button>
           </div>
           <div class="support-search-row" id="supportSearchRow">
-            <input id="supportTeamSearch" class="table-select support-search-input" type="search" placeholder="Search staff by name, email, or role..." />
+            <input id="supportTeamSearch" class="table-select support-search-input" type="search" placeholder="Search team or staff by name ..." />
           </div>
           <div class="team-grid support-team-grid" id="supportTeamsGrid">
             <article class="team-card">Loading support teams...</article>
@@ -270,10 +278,14 @@
         <article class="section-block">
           <div class="section-head">
             <div>
-              <button type="button" class="table-btn" id="backToTeamsBtn">← Back to teams</button>
               <h3 id="teamDetailTitle">Team Leader</h3>
               <p class="sub" id="teamDetailSubtitle">Manage selected support team.</p>
             </div>
+            <button type="button" class="back-icon-btn" id="backToTeamsBtn" aria-label="Back to teams">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
           </div>
 
           <div class="support-team-detail" id="supportTeamDetail"></div>
@@ -300,6 +312,50 @@
           <button type="button" class="admin-modal-close" data-close-admin-modal="true" aria-label="Close">×</button>
         </div>
         <div class="admin-modal-content" id="adminTicketModalContent"></div>
+      </div>
+    </div>
+
+    <div id="bulkEditDrawer" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="bulkEditDrawerTitle">
+      <div class="admin-modal-backdrop" data-close-bulk-drawer="true"></div>
+      <div class="admin-modal-card admin-drawer-card" role="document">
+        <div class="admin-modal-head">
+          <h3 id="bulkEditDrawerTitle">Bulk Edit Tickets</h3>
+          <button type="button" class="admin-modal-close" data-close-bulk-drawer="true" aria-label="Close">×</button>
+        </div>
+        <div class="admin-modal-content">
+          <p class="bulk-drawer-kicker">Selection summary</p>
+          <p class="sub" id="bulkDrawerSelectionCount">0 tickets selected</p>
+          <div class="bulk-preview-list" id="bulkDrawerTicketPreview"></div>
+          <p class="bulk-drawer-kicker">Changes to apply</p>
+          <label class="admin-modal-field">
+            <span>Set status (optional)</span>
+            <select id="bulkDrawerStatusSelect" class="table-select">
+              <option value="">No status change</option>
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </label>
+          <label class="admin-modal-field">
+            <span>Assign team (optional)</span>
+            <select id="bulkDrawerTeamSelect" class="table-select">
+              <option value="">No team change</option>
+              <option value="Network Team">Network Team</option>
+              <option value="Software Team">Software Team</option>
+              <option value="Account Team">Account Team</option>
+              <option value="Hardware Team">Hardware Team</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="Application Support">Application Support</option>
+              <option value="Facilities">Facilities</option>
+            </select>
+          </label>
+          <p class="sub bulk-drawer-helper">Leave a field empty to keep the current value for selected tickets.</p>
+          <p class="bulk-drawer-summary" id="bulkDrawerSummary">Choose status, team, or both.</p>
+          <div class="table-actions admin-modal-actions">
+            <button type="button" class="table-btn" id="bulkDrawerClearSelection">Clear Selection</button>
+            <button type="button" class="table-btn update" id="bulkDrawerApplyBtn" disabled>Apply Changes</button>
+          </div>
+        </div>
       </div>
     </div>
 

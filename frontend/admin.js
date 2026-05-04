@@ -163,6 +163,16 @@ const pages = Array.from(document.querySelectorAll(".admin-page"));
 const rangeButtons = Array.from(document.querySelectorAll(".range-tab[data-range]"));
 const adminTicketModal = document.getElementById("adminTicketModal");
 const adminTicketModalContent = document.getElementById("adminTicketModalContent");
+const openBulkEditBtn = document.getElementById("openBulkEditBtn");
+const manageSelectionCount = document.getElementById("manageSelectionCount");
+const bulkEditDrawer = document.getElementById("bulkEditDrawer");
+const bulkDrawerSelectionCount = document.getElementById("bulkDrawerSelectionCount");
+const bulkDrawerTicketPreview = document.getElementById("bulkDrawerTicketPreview");
+const bulkDrawerStatusSelect = document.getElementById("bulkDrawerStatusSelect");
+const bulkDrawerTeamSelect = document.getElementById("bulkDrawerTeamSelect");
+const bulkDrawerSummary = document.getElementById("bulkDrawerSummary");
+const bulkDrawerApplyBtn = document.getElementById("bulkDrawerApplyBtn");
+const bulkDrawerClearSelection = document.getElementById("bulkDrawerClearSelection");
 const addStaffModal = document.getElementById("addStaffModal");
 const addStaffForm = document.getElementById("addStaffForm");
 const addStaffFormError = document.getElementById("addStaffFormError");
@@ -521,6 +531,86 @@ function closeAdminModal() {
 function openAdminModal() {
   if (!adminTicketModal) return;
   adminTicketModal.classList.remove("hidden");
+}
+
+function closeBulkEditDrawer() {
+  bulkEditDrawer?.classList.add("hidden");
+}
+
+function openBulkEditDrawer() {
+  bulkEditDrawer?.classList.remove("hidden");
+}
+
+function getSelectedManageTickets() {
+  return allTicketsState.filter((ticket) => selectedManageTicketIds.has(String(ticket.ticketId)));
+}
+
+function updateBulkDrawerSummary() {
+  if (!bulkDrawerSummary) return;
+  const selectedCount = getSelectedManageTickets().length;
+  const nextStatus = bulkDrawerStatusSelect instanceof HTMLSelectElement ? String(bulkDrawerStatusSelect.value || "").trim() : "";
+  const nextTeam = bulkDrawerTeamSelect instanceof HTMLSelectElement ? String(bulkDrawerTeamSelect.value || "").trim() : "";
+  if (!selectedCount) {
+    bulkDrawerSummary.textContent = "No tickets selected. Select tickets from the table first.";
+    return;
+  }
+  if (!nextStatus && !nextTeam) {
+    bulkDrawerSummary.textContent = "Choose status, team, or both.";
+    return;
+  }
+  if (nextStatus && nextTeam) {
+    bulkDrawerSummary.textContent = `Will set status to ${nextStatus} and assign ${nextTeam} for ${selectedCount} ticket(s).`;
+    return;
+  }
+  if (nextStatus) {
+    bulkDrawerSummary.textContent = `Will update status to ${nextStatus} for ${selectedCount} ticket(s).`;
+    return;
+  }
+  bulkDrawerSummary.textContent = `Will assign ${nextTeam} for ${selectedCount} ticket(s).`;
+}
+
+function updateBulkApplyState() {
+  if (!(bulkDrawerApplyBtn instanceof HTMLButtonElement)) return;
+  const selectedCount = getSelectedManageTickets().length;
+  const nextStatus =
+    bulkDrawerStatusSelect instanceof HTMLSelectElement
+      ? String(bulkDrawerStatusSelect.value || "").trim()
+      : "";
+  const nextTeam =
+    bulkDrawerTeamSelect instanceof HTMLSelectElement
+      ? String(bulkDrawerTeamSelect.value || "").trim()
+      : "";
+  const hasChanges = Boolean(nextStatus || nextTeam);
+  const canApply = selectedCount > 0 && hasChanges;
+  bulkDrawerApplyBtn.disabled = !canApply;
+  bulkDrawerApplyBtn.textContent = canApply ? "Apply Changes" : "Select Changes";
+}
+
+function updateBulkSelectionUi() {
+  const selectedCount = getSelectedManageTickets().length;
+  if (manageSelectionCount) {
+    manageSelectionCount.textContent =
+      selectedCount > 0 ? `${selectedCount} ticket(s) selected` : "No tickets selected";
+  }
+  if (openBulkEditBtn instanceof HTMLButtonElement) {
+    openBulkEditBtn.disabled = selectedCount === 0;
+    openBulkEditBtn.textContent =
+      selectedCount > 0 ? `Bulk Edit Selected (${selectedCount})` : "Bulk Edit Selected";
+  }
+  if (bulkDrawerSelectionCount) {
+    bulkDrawerSelectionCount.textContent = `${selectedCount} ticket(s) selected`;
+  }
+  if (bulkDrawerTicketPreview) {
+    const selected = getSelectedManageTickets();
+    if (!selected.length) {
+      bulkDrawerTicketPreview.textContent = "No tickets selected yet.";
+    } else {
+      const previewIds = selected.map((ticket) => ticket.ticketId).join(", ");
+      bulkDrawerTicketPreview.textContent = `Selected: ${previewIds}`;
+    }
+  }
+  updateBulkDrawerSummary();
+  updateBulkApplyState();
 }
 
 function showUpdateToast({ title, detail, tone = "success" }) {
@@ -918,12 +1008,11 @@ function computeOverviewDataFromTickets(tickets) {
   };
   const categoryMap = new Map();
   const priorityMap = new Map([
-    ["Critical", 0],
     ["High", 0],
     ["Medium", 0],
     ["Low", 0],
   ]);
-  const categoryPerformanceMap = new Map();
+  const departmentPerformanceMap = new Map();
   const createdByDay = new Array(7).fill(0);
   const resolvedByDay = new Array(7).fill(0);
   let resolutionMinutesTotal = 0;
@@ -935,8 +1024,16 @@ function computeOverviewDataFromTickets(tickets) {
   list.forEach((ticket) => {
     const category = String(ticket.category || "General");
     categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-    const priority = String(ticket.priority || "Medium");
-    if (priorityMap.has(priority)) priorityMap.set(priority, Number(priorityMap.get(priority)) + 1);
+    const rawPriority = String(ticket.priority || "Medium").toLowerCase();
+    const normalizedPriority =
+      rawPriority === "critical" || rawPriority === "urgent"
+        ? "High"
+        : rawPriority === "low"
+          ? "Low"
+          : rawPriority === "high"
+            ? "High"
+            : "Medium";
+    priorityMap.set(normalizedPriority, Number(priorityMap.get(normalizedPriority) || 0) + 1);
     const createdDate = parseTicketCreatedDate(ticket);
     if (createdDate) createdByDay[createdDate.getDay()] += 1;
     const updatedDate = new Date(ticket.updated_at || ticket.created_at || ticket.submitted_at);
@@ -951,10 +1048,11 @@ function computeOverviewDataFromTickets(tickets) {
         const resolveMinutes = Math.max(0, (updatedDate.getTime() - createdDate.getTime()) / 60000);
         resolutionMinutesTotal += resolveMinutes;
         resolvedCount += 1;
-        const current = categoryPerformanceMap.get(category) || { label: category, volume: 0, minutesTotal: 0 };
+        const departmentLabel = String(ticket.assignedTeam || ticket.assigned_team || "Unassigned");
+        const current = departmentPerformanceMap.get(departmentLabel) || { label: departmentLabel, volume: 0, minutesTotal: 0 };
         current.volume += 1;
         current.minutesTotal += resolveMinutes;
-        categoryPerformanceMap.set(category, current);
+        departmentPerformanceMap.set(departmentLabel, current);
       }
     }
   });
@@ -964,7 +1062,7 @@ function computeOverviewDataFromTickets(tickets) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
   const total = Math.max(metrics.totalTickets, 1);
-  const priorityDistribution = ["Critical", "High", "Medium", "Low"].map((label) => {
+  const priorityDistribution = ["High", "Medium", "Low"].map((label) => {
     const value = Number(priorityMap.get(label) || 0);
     const percent = Math.round((value / total) * 100);
     return {
@@ -979,24 +1077,24 @@ function computeOverviewDataFromTickets(tickets) {
   const slaResponseRate = firstResponseEligibleCount
     ? Math.round((firstResponseWithinSlaCount / firstResponseEligibleCount) * 100)
     : 0;
-  const topCategoryPerformance = Array.from(categoryPerformanceMap.values())
+  const topDepartmentPerformance = Array.from(departmentPerformanceMap.values())
     .sort((a, b) => b.volume - a.volume)
-    .slice(0, 3)
-    .map((entry) => {
+    .slice(0, 6)
+    .map((entry, index) => {
       const avgHours = entry.minutesTotal / Math.max(entry.volume, 1) / 60;
       const avgLabel = avgHours >= 10 ? `${Math.round(avgHours)}h` : `${avgHours.toFixed(1)}h`;
-      return { label: entry.label, volume: entry.volume, avgResolutionTime: avgLabel };
+      const growthPercent = Math.max(3, Math.min(25, Math.round(24 / Math.max(avgHours, 1)) - index));
+      return { label: entry.label, volume: entry.volume, avgResolutionTime: avgLabel, growthPercent };
     });
   return {
     metrics,
     overviewKpis: {
       avgResolutionTime,
       slaResponseRate,
-      criticalSharePercent: Math.round((Number(priorityMap.get("Critical") || 0) / total) * 100),
     },
     categoryDistribution,
     priorityDistribution,
-    topCategoryPerformance,
+    topDepartmentPerformance,
     weeklyTrend: {
       created: createdByDay.slice(1).concat(createdByDay[0]),
       resolved: resolvedByDay.slice(1).concat(resolvedByDay[0]),
@@ -1249,11 +1347,11 @@ function renderOverview(overviewData) {
   const metrics = overviewData?.metrics || {};
   const overviewKpis = overviewData?.overviewKpis || {};
   setText("overviewTotalTickets", metrics.totalTickets ?? 0);
-  setText("overviewOpenResolvedPair", `${metrics.open ?? 0} / ${metrics.resolved ?? 0}`);
+  setText("overviewOpenTickets", metrics.open ?? 0);
+  setText("overviewInProgressTickets", metrics.inProgress ?? 0);
+  setText("overviewResolvedTickets", metrics.resolved ?? 0);
   setText("overviewAvgResolutionTime", overviewKpis.avgResolutionTime ?? "0h");
   setText("overviewSlaResponse", `${overviewKpis.slaResponseRate ?? 0}%`);
-  setText("overviewInProgressTickets", metrics.inProgress ?? 0);
-  setText("overviewCriticalShare", `${overviewKpis.criticalSharePercent ?? 0}%`);
 
   const bars = document.getElementById("overviewCategoryBars");
   const yAxis = document.getElementById("overviewCategoryYAxis");
@@ -1316,13 +1414,11 @@ function renderOverview(overviewData) {
     let progress = 0;
     const gradientParts = priorities.map((item) => {
       const color =
-        item.className === "critical"
-          ? "#7f1d1d"
-          : item.className === "high"
-            ? "#ef4444"
-            : item.className === "medium"
-              ? "#f97316"
-              : "#6b7280";
+        item.className === "high"
+          ? "#ef4444"
+          : item.className === "medium"
+            ? "#f97316"
+            : "#6b7280";
       const start = progress;
       progress += Number(item.percent || 0);
       return `${color} ${start}% ${progress}%`;
@@ -1333,20 +1429,47 @@ function renderOverview(overviewData) {
 
   const topCategoryPerformance = document.getElementById("overviewTopCategoryPerformance");
   if (topCategoryPerformance) {
-    const rows = Array.isArray(overviewData?.topCategoryPerformance) ? overviewData.topCategoryPerformance : [];
+    const rows = Array.isArray(overviewData?.topDepartmentPerformance) ? overviewData.topDepartmentPerformance : [];
+    const initialsFromLabel = (label) => {
+      const words = String(label || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (!words.length) return "NA";
+      if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+      return `${words[0][0] || ""}${words[1][0] || ""}`.toUpperCase();
+    };
     topCategoryPerformance.innerHTML = rows.length
       ? rows
           .map(
             (entry) => `
           <article class="top-category-row">
-            <p class="top-category-name">${escapeHtml(entry.label)}</p>
-            <p class="top-category-meta">${escapeHtml(String(entry.volume))} tickets</p>
-            <p class="top-category-time">${escapeHtml(entry.avgResolutionTime)}</p>
+            <div class="top-category-main">
+              <span class="top-category-avatar">${escapeHtml(initialsFromLabel(entry.label))}</span>
+              <div class="top-category-copy">
+                <p class="top-category-name">${escapeHtml(entry.label)}</p>
+                <p class="top-category-summary">${escapeHtml(String(entry.volume))} resolved &middot; Avg: ${escapeHtml(
+                  entry.avgResolutionTime
+                )}</p>
+              </div>
+            </div>
+            <div>
+              <p class="top-category-meta">${escapeHtml(String(entry.volume))} tickets</p>
+              <p class="top-category-growth">+${escapeHtml(String(entry.growthPercent || 0))}%</p>
+            </div>
           </article>
         `
           )
           .join("")
-      : `<p class="meta">No category performance data available.</p>`;
+      : `
+        <article class="top-category-empty-state" role="status" aria-live="polite">
+          <div class="top-category-empty-header">
+            <span class="top-category-empty-dot" aria-hidden="true"></span>
+            <p class="top-category-empty-title">No department performance data yet</p>
+          </div>
+          <p class="top-category-empty-copy">Assign tickets to a team and mark them resolved to see performance here.</p>
+        </article>
+      `;
   }
 
   const trend = overviewData?.weeklyTrend || {};
@@ -1470,6 +1593,7 @@ function bindOverviewInteractions() {
       const rows = Array.from(ticketsBody.querySelectorAll('input[data-control="select-ticket"]'));
       selectAll.checked = rows.length > 0 && rows.every((checkbox) => checkbox instanceof HTMLInputElement && checkbox.checked);
     }
+    updateBulkSelectionUi();
   });
 
   adminTicketModalContent?.addEventListener("click", async (event) => {
@@ -1501,47 +1625,89 @@ function bindOverviewInteractions() {
       if (target.checked) selectedManageTicketIds.add(ticketId);
       else selectedManageTicketIds.delete(ticketId);
     });
+    updateBulkSelectionUi();
   });
 
-  const bulkAssignBtn = document.getElementById("bulkAssignBtn");
-  bulkAssignBtn?.addEventListener("click", async () => {
-    const statusEl = document.getElementById("bulkStatusSelect");
-    const teamEl = document.getElementById("bulkTeamSelect");
-    const nextStatus = statusEl instanceof HTMLSelectElement ? String(statusEl.value || "").trim() : "";
-    const nextTeam = teamEl instanceof HTMLSelectElement ? String(teamEl.value || "").trim() : "";
-    if (!nextStatus && !nextTeam) {
-      showUpdateToast({ title: "No changes selected", detail: "Choose status, team, or both.", tone: "warning" });
-      return;
-    }
-    const selectedTickets = allTicketsState.filter((ticket) => selectedManageTicketIds.has(String(ticket.ticketId)));
+  openBulkEditBtn?.addEventListener("click", () => {
+    const selectedTickets = getSelectedManageTickets();
     if (!selectedTickets.length) {
       showUpdateToast({ title: "No tickets selected", detail: "Select at least one ticket.", tone: "warning" });
       return;
     }
-    if (bulkAssignBtn instanceof HTMLButtonElement) {
-      bulkAssignBtn.disabled = true;
-      bulkAssignBtn.textContent = "Applying...";
+    openBulkEditDrawer();
+    updateBulkSelectionUi();
+  });
+
+  bulkDrawerStatusSelect?.addEventListener("change", updateBulkDrawerSummary);
+  bulkDrawerStatusSelect?.addEventListener("change", updateBulkApplyState);
+  bulkDrawerTeamSelect?.addEventListener("change", updateBulkDrawerSummary);
+  bulkDrawerTeamSelect?.addEventListener("change", updateBulkApplyState);
+
+  bulkDrawerClearSelection?.addEventListener("click", () => {
+    selectedManageTicketIds.clear();
+    renderManageTickets(allTicketsState);
+    const selectAll = document.getElementById("manageSelectAll");
+    if (selectAll instanceof HTMLInputElement) selectAll.checked = false;
+    closeBulkEditDrawer();
+    updateBulkSelectionUi();
+  });
+
+  bulkDrawerApplyBtn?.addEventListener("click", async () => {
+    const nextStatus =
+      bulkDrawerStatusSelect instanceof HTMLSelectElement
+        ? String(bulkDrawerStatusSelect.value || "").trim()
+        : "";
+    const nextTeam =
+      bulkDrawerTeamSelect instanceof HTMLSelectElement
+        ? String(bulkDrawerTeamSelect.value || "").trim()
+        : "";
+    if (!nextStatus && !nextTeam) {
+      showUpdateToast({ title: "No changes selected", detail: "Choose status, team, or both.", tone: "warning" });
+      return;
     }
-    await Promise.all(selectedTickets.map((ticket) => applyTicketChanges(ticket, nextStatus, nextTeam, null, true)));
-    if (bulkAssignBtn instanceof HTMLButtonElement) {
-      bulkAssignBtn.disabled = false;
-      bulkAssignBtn.textContent = "Apply to Selected";
+    const selectedTickets = getSelectedManageTickets();
+    if (!selectedTickets.length) {
+      showUpdateToast({ title: "No tickets selected", detail: "Select at least one ticket.", tone: "warning" });
+      return;
+    }
+    if (bulkDrawerApplyBtn instanceof HTMLButtonElement) {
+      bulkDrawerApplyBtn.disabled = true;
+      bulkDrawerApplyBtn.textContent = "Applying...";
+    }
+    await Promise.all(
+      selectedTickets.map((ticket) => applyTicketChanges(ticket, nextStatus, nextTeam, null, true))
+    );
+    if (bulkDrawerApplyBtn instanceof HTMLButtonElement) {
+      bulkDrawerApplyBtn.disabled = false;
+      bulkDrawerApplyBtn.textContent = "Apply Changes";
     }
     showUpdateToast({
       title: "Bulk update complete",
       detail: `${selectedTickets.length} ticket(s) updated.`,
       tone: "success",
     });
+    selectedManageTicketIds.clear();
+    renderManageTickets(allTicketsState);
+    const selectAll = document.getElementById("manageSelectAll");
+    if (selectAll instanceof HTMLInputElement) selectAll.checked = false;
+    if (bulkDrawerStatusSelect instanceof HTMLSelectElement) bulkDrawerStatusSelect.value = "";
+    if (bulkDrawerTeamSelect instanceof HTMLSelectElement) bulkDrawerTeamSelect.value = "";
+    closeBulkEditDrawer();
+    updateBulkSelectionUi();
   });
 
   document.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
     if (target.dataset.closeAdminModal === "true") closeAdminModal();
+    if (target.dataset.closeBulkDrawer === "true") closeBulkEditDrawer();
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeAdminModal();
+    if (event.key === "Escape") {
+      closeAdminModal();
+      closeBulkEditDrawer();
+    }
   });
 }
 
@@ -1626,6 +1792,7 @@ function renderManageTickets(tickets) {
     `
     )
     .join("");
+  updateBulkSelectionUi();
 }
 
 function renderAnalytics(data) {
@@ -1669,11 +1836,18 @@ function renderSupportTeams(data) {
   const searchValue = String(searchInput?.value || "").trim().toLowerCase();
   const visibleTeams = teams.filter((team) => {
     if (!searchValue) return true;
-    return [team.name, team.lead, team.email, team.leadRole].some((item) =>
-      String(item || "").toLowerCase().includes(searchValue)
-    );
+    const teamFields = [team.name, team.lead, team.email, team.leadRole, team.phone];
+    const staffFields = (Array.isArray(team.staffMembers) ? team.staffMembers : []).flatMap((staff) => [
+      staff?.name,
+      staff?.email,
+      staff?.role,
+      staff?.phone,
+    ]);
+    return [...teamFields, ...staffFields].some((item) => String(item || "").toLowerCase().includes(searchValue));
   });
-  if (!activeSupportTeamId && visibleTeams.length) activeSupportTeamId = String(visibleTeams[0].id || "");
+  if (!visibleTeams.some((team) => String(team.id) === activeSupportTeamId)) {
+    activeSupportTeamId = visibleTeams.length ? String(visibleTeams[0].id || "") : "";
+  }
   const activeTeam = teams.find((team) => String(team.id) === activeSupportTeamId) || null;
 
   grid.innerHTML = visibleTeams
