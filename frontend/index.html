@@ -13,10 +13,9 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="app-header">
       <div class="brand">
-        <p class="brand-kicker">IT Support Center</p>
+        <p class="brand-kicker">Smart Campus Help Desk</p>
         <div class="brand-row">
           <h1>QuickAid</h1>
           <div class="header-actions">
@@ -69,12 +68,18 @@
                 <path d="M4 20C4 16.6863 7.13401 14 11 14H13C16.866 14 20 16.6863 20 20V22H4V20Z" fill="currentColor" opacity="0.9" />
               </svg>
             </a>
+            <button type="button" class="ghost-action auth-link icon-login icon-logout hidden" id="btnLogout" aria-label="Log out">
+              <span class="notif-bell" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M15 12H4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                  <path d="M13 4H17C18.1046 4 19 4.89543 19 6V18C19 19.1046 18.1046 20 17 20H13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />                </svg>
+              </span>
+            </button>
           </div>
         </div>
       </div>
-      <p class="header-copy">
-        School Technology Help Desk
-      </p>
+      <p class="header-copy" id="studentSessionLabel"> Signed in as student</p>
     </header>
 
     <aside class="sidebar" aria-label="Main navigation">
@@ -86,28 +91,20 @@
           </svg>
         </div>
         <div class="sidebar-brand-text">
-          <div class="sidebar-brand-title">TickIt</div>
-          <div class="sidebar-brand-sub">AI-Forwarded Support</div>
+          <div class="sidebar-brand-title">QuickAid</div>
+          <div class="sidebar-brand-sub">Student Panel</div>
         </div>
       </div>
 
       <nav class="sidebar-nav" aria-label="Sidebar">
         <button type="button" id="sidebarDashboardBtn" class="sidebar-item sidebar-item-active" data-active="true">
-          Dashboard <span class="sidebar-badge">4</span>
+          Dashboard 
         </button>
-        <a id="btnAdminPanel" class="sidebar-item hidden" href="./admin.html">Admin Panel</a>
         <button type="button" id="sidebarKnowledgeBtn" class="sidebar-item">Knowledge Base</button>
-        <button type="button" class="sidebar-item">Alerts</button>
       </nav>
-
-  
     </aside>
 
     <main id="main-content" class="container main-layout">
-      <section class="status-banner" id="statusBanner" role="status" aria-live="polite">
-        Service status: Operational
-      </section>
-
       <section class="quick-metrics" aria-label="Support at a glance">
         <article class="stat-card" data-stat="Open">
           <div class="stat-row">
@@ -505,9 +502,29 @@
       </section>
     </main>
 
-    <footer class="app-footer">
-      <p>QuickAid Smart Campus Helpdesk</p>
-      <p>Frontend Phase 2-3</p>
+    <footer class="app-footer university-footer" aria-label="University helpdesk footer">
+      <div class="footer-grid">
+        <section class="footer-block">
+          <h2>QuickAid Helpdesk</h2>
+          <p>QuickAid supports ticket reporting, request tracking, and service updates for students, staff, and administrators.</p>
+        </section>
+        <section class="footer-block">
+          <h3>Contact</h3>
+          <p>Email: quickaid@campus.edu</p>
+          <p>Phone: +60 3-8899 4100</p>
+          <p>Portal: support.campus.edu</p>
+        </section>
+        <section class="footer-block">
+          <h3>Support Hours</h3>
+          <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
+          <p>Saturday: 9:00 AM - 1:00 PM</p>
+          <p>Emergency line available after hours.</p>
+        </section>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 QuickAid Services</span>
+        <span>Data Privacy and Acceptable Use Policy Apply</span>
+      </div>
     </footer>
 
     <div class="modal hidden" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">

@@ -321,3 +321,57 @@ Error shape expected by frontend (for user-friendly inline message):
   "message": "Validation failed: email already in use"
 }
 
+10) Temporary Permission QA Data + Approval Logic Contract
+---------------------------------------------------------
+Frontend now includes explicit permission test seeds in `frontend/admin.js` under:
+- `TEMP_DATA_PERMISSION_QA`
+
+Seed characteristics:
+- Mix of `pending`, `approved`, and `rejected`
+- Mix of `Staff` and `Admin` role requests
+- Requests mapped to existing university team IDs:
+  - `technical` (IT Services)
+  - `billing` (Finance Office)
+  - `premium` (Academic Affairs)
+  - `sales` (Student Affairs)
+
+Current frontend approval behavior (local-first preview):
+1. Admin clicks Approve/Reject in Permissions tab.
+2. Matching access request status is updated:
+   - `pending -> approved` OR `pending -> rejected`
+3. Matching account in local account store is updated:
+   - `approvalStatus = approved|rejected`
+4. On Approve:
+   - requester is inserted into target team's `staffMembers` if not already present
+   - target team's `members` count is recalculated from `staffMembers.length`
+   - requester becomes visible in Group Details cards
+
+Backend-ready endpoint recommendation for real persistence:
+1. PATCH /api/admin/access_requests/{requestId}
+   Request:
+   {
+     "status": "approved|rejected",
+     "reviewedBy": "admin@campus.edu"
+   }
+   Response:
+   {
+     "ok": true,
+     "data": {
+       "id": "AR-001",
+       "status": "approved",
+       "reviewedBy": "admin@campus.edu",
+       "teamId": "technical",
+       "email": "emily.chen@campus.edu",
+       "role": "Staff"
+     }
+   }
+
+2. (Optional server-managed side-effect)
+   Backend may automatically append approved requester into team staff list and return updated team payload:
+   - `staffMembers`
+   - `members`
+
+Notes for consistency:
+- Treat request identity as `id` primary key.
+- Keep `teamId` stable so frontend can update correct group details.
+- Return role values consistently (`Staff` / `Admin`) to avoid mapping drift.

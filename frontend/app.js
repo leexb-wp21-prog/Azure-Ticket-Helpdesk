@@ -48,6 +48,7 @@ const btnLogout = document.getElementById("btnLogout");
 const btnAdminPanel = document.getElementById("btnAdminPanel");
 const sidebarDashboardBtn = document.getElementById("sidebarDashboardBtn");
 const sidebarKnowledgeBtn = document.getElementById("sidebarKnowledgeBtn");
+const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
 const statusBanner = document.getElementById("statusBanner");
 const quickMetrics = document.querySelector(".quick-metrics");
 
@@ -114,6 +115,8 @@ const statTotal = document.getElementById("statTotal");
 const mockTickets = [];
 let lastLoadedTickets = [];
 const ticketCacheStorageKey = "quickaid-ticket-cache-v1";
+
+const studentSessionLabel = document.getElementById("studentSessionLabel");
 
 function persistTicketCache(items) {
   try {
@@ -740,11 +743,17 @@ function updateHeaderAuthUi() {
   const role = String(session?.role || "user").toLowerCase();
   const isAdmin = signedIn && role === "admin";
   document.body.dataset.role = ["user", "admin", "staff"].includes(role) ? role : "user";
-  btnSignIn?.classList.remove("hidden");
+  btnSignIn?.classList.toggle("hidden", signedIn);
   btnProfile?.classList.add("hidden");
-  btnLogout?.classList.add("hidden");
+  btnLogout?.classList.toggle("hidden", !signedIn);
+  sidebarLogoutBtn?.classList.toggle("hidden", !signedIn);
   btnNotifications?.classList.remove("hidden");
   btnAdminPanel?.classList.toggle("hidden", !isAdmin);
+  if (studentSessionLabel) {
+    studentSessionLabel.textContent = signedIn
+      ? `Signed in as ${session.email}`
+      : "Not signed in";
+  }
   if (!signedIn) closeNotifDropdown();
 }
 
@@ -1590,6 +1599,13 @@ btnLogout?.addEventListener("click", () => {
   localStorage.removeItem(sessionKey);
   updateHeaderAuthUi();
   closeModal(profileModal);
+});
+
+sidebarLogoutBtn?.addEventListener("click", () => {
+  localStorage.removeItem(sessionKey);
+  updateHeaderAuthUi();
+  closeModal(profileModal);
+  window.location.href = "./login.html";
 });
 
 function openCreateModal() {

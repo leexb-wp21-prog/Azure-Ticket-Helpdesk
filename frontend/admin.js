@@ -2,6 +2,7 @@ const sessionKey = "quickaid-session-v1";
 const API_BASE = window.QUICKAID_API_BASE || "";
 const accountsStorageKey = "quickaid-accounts-v1";
 const accessRequestsStorageKey = "quickaid-access-requests-v1";
+const SYSTEM_ADMIN_EMAIL = "admin@campus.edu";
 
 function loadSession() {
   const raw = localStorage.getItem(sessionKey);
@@ -47,20 +48,114 @@ function isAdminSession(session) {
   return String(session?.role || "").toLowerCase() === "admin";
 }
 
+function isSystemAdminSession(session) {
+  return isAdminSession(session) && String(session?.email || "").toLowerCase() === SYSTEM_ADMIN_EMAIL;
+}
+
 const session = loadSession();
 if (!isAdminSession(session)) {
   window.location.replace("./index.html");
 }
 
 const adminSessionLabel = document.getElementById("adminSessionLabel");
-if (adminSessionLabel && session?.email) {
-  adminSessionLabel.textContent = `Signed in as ${session.email}`;
-}
-
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
-adminLogoutBtn?.addEventListener("click", () => {
+const adminBtnSignIn = document.getElementById("adminBtnSignIn");
+const adminBtnLogout = document.getElementById("adminBtnLogout");
+const adminBtnNotifications = document.getElementById("adminBtnNotifications");
+const adminNotifDropdown = document.getElementById("adminNotifDropdown");
+const adminNotifBadge = document.getElementById("adminNotifBadge");
+const adminNotifUnreadCount = document.getElementById("adminNotifUnreadCount");
+const adminNotifList = document.getElementById("adminNotifList");
+const adminBtnMarkAllRead = document.getElementById("adminBtnMarkAllRead");
+
+const adminNotifications = [
+  { id: "n1", title: "3 high-priority tickets need triage", time: "5m ago", read: false },
+  { id: "n2", title: "Network Team resolved TKT-309", time: "18m ago", read: false },
+  { id: "n3", title: "Weekly admin report is ready", time: "1h ago", read: true },
+];
+
+function logoutAndRedirectToLogin() {
   localStorage.removeItem(sessionKey);
   window.location.href = "./login.html";
+}
+
+function updateAdminAuthUi() {
+  if (adminSessionLabel && session?.email) {
+    adminSessionLabel.textContent = `Signed in as ${session.email}`;
+  }
+  if (session?.email) {
+    adminBtnSignIn?.classList.add("hidden");
+    adminBtnLogout?.classList.remove("hidden");
+  } else {
+    adminBtnSignIn?.classList.remove("hidden");
+    adminBtnLogout?.classList.add("hidden");
+  }
+}
+
+function renderAdminNotifications() {
+  if (!adminNotifList) return;
+  adminNotifList.innerHTML = adminNotifications
+    .map(
+      (item) => `
+      <li class="notif-item ${item.read ? "notif-item-read" : "notif-item-unread"}" data-notif-id="${item.id}">
+        <span class="${item.read ? "notif-check" : "notif-dot"}" aria-hidden="true">${item.read ? "✓" : ""}</span>
+        <div class="notif-text">
+          <p class="notif-text-title">${item.title}</p>
+          <p class="notif-time">${item.time}</p>
+        </div>
+      </li>
+    `
+    )
+    .join("");
+}
+
+function updateAdminNotificationUi() {
+  const unread = adminNotifications.filter((item) => !item.read).length;
+  if (adminNotifUnreadCount) adminNotifUnreadCount.textContent = String(unread);
+  if (adminNotifBadge) {
+    adminNotifBadge.textContent = String(unread);
+    adminNotifBadge.classList.toggle("hidden", unread <= 0);
+  }
+  renderAdminNotifications();
+}
+
+function closeAdminNotifDropdown() {
+  adminNotifDropdown?.classList.add("hidden");
+  adminBtnNotifications?.setAttribute("aria-expanded", "false");
+}
+
+function toggleAdminNotifDropdown() {
+  if (!adminNotifDropdown || !adminBtnNotifications) return;
+  const willOpen = adminNotifDropdown.classList.contains("hidden");
+  adminNotifDropdown.classList.toggle("hidden", !willOpen);
+  adminBtnNotifications.setAttribute("aria-expanded", willOpen ? "true" : "false");
+}
+
+updateAdminAuthUi();
+updateAdminNotificationUi();
+
+adminLogoutBtn?.addEventListener("click", logoutAndRedirectToLogin);
+adminBtnLogout?.addEventListener("click", logoutAndRedirectToLogin);
+adminBtnNotifications?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  toggleAdminNotifDropdown();
+});
+adminBtnMarkAllRead?.addEventListener("click", () => {
+  adminNotifications.forEach((item) => {
+    item.read = true;
+  });
+  updateAdminNotificationUi();
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return;
+  const insideNotif = Boolean(target.closest(".notif-wrap"));
+  if (!insideNotif) closeAdminNotifDropdown();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeAdminNotifDropdown();
 });
 
 const pageLinks = Array.from(document.querySelectorAll("[data-page-link]"));
@@ -346,12 +441,21 @@ const mockAdminData = {
         ],
       },
     ],
+    // TEMP_DATA_PERMISSION_QA:
+    // This seed set intentionally mixes pending/approved/rejected and staff/admin requests.
+    // QA flow:
+    // 1) Approve pending request -> requester should appear in group details staff cards.
+    // 2) Team members count should increment and match staffMembers.length.
+    // 3) Reject request -> account approvalStatus should become "rejected", no team insertion.
     accessRequests: [
-      { id: "AR-001", teamId: "technical", requester: "Emily Chen", email: "emily.chen@company.com", department: "IT Services", role: "Staff", status: "pending", date: "Feb 3, 2026, 9:15 AM" },
-      { id: "AR-002", teamId: "billing", requester: "Michael Brown", email: "michael.brown@company.com", department: "Finance Office", role: "Staff", status: "pending", date: "Feb 2, 2026, 2:30 PM" },
-      { id: "AR-003", teamId: "premium", requester: "Lisa Anderson", email: "lisa.anderson@company.com", department: "Academic Affairs", role: "Admin", status: "pending", date: "Feb 1, 2026, 11:20 AM" },
-      { id: "AR-004", teamId: "sales", requester: "Robert Taylor", email: "robert.taylor@company.com", department: "Student Affairs", role: "Staff", status: "approved", date: "Jan 30, 2026, 10:00 AM", reviewedBy: "Admin" },
-      { id: "AR-005", teamId: "premium", requester: "Jennifer Lee", email: "jennifer.lee@external.com", department: "External Contractor", role: "Staff", status: "rejected", date: "Jan 28, 2026, 1:45 PM", reviewedBy: "Admin" },
+      { id: "AR-001", teamId: "technical", requester: "Emily Chen", email: "emily.chen@campus.edu", department: "IT Services", role: "Staff", status: "pending", date: "Feb 3, 2026, 9:15 AM" },
+      { id: "AR-002", teamId: "billing", requester: "Michael Brown", email: "michael.brown@campus.edu", department: "Finance Office", role: "Staff", status: "pending", date: "Feb 2, 2026, 2:30 PM" },
+      { id: "AR-003", teamId: "admin-department", requester: "Lisa Anderson", email: "lisa.anderson@campus.edu", department: "Administration Office", role: "Admin", status: "pending", date: "Feb 1, 2026, 11:20 AM" },
+      { id: "AR-004", teamId: "sales", requester: "Robert Taylor", email: "robert.taylor@campus.edu", department: "Student Affairs", role: "Staff", status: "pending", date: "Jan 31, 2026, 10:00 AM" },
+      { id: "AR-005", teamId: "admin-department", requester: "Hafiz Rahman", email: "hafiz.rahman@campus.edu", department: "Administration Office", role: "Admin", status: "pending", date: "Jan 30, 2026, 8:45 AM" },
+      { id: "AR-006", teamId: "billing", requester: "Nurul Izzah", email: "nurul.izzah@campus.edu", department: "Finance Office", role: "Staff", status: "approved", date: "Jan 29, 2026, 4:10 PM", reviewedBy: "Admin" },
+      { id: "AR-007", teamId: "premium", requester: "Jason Lim", email: "jason.lim@campus.edu", department: "Academic Affairs", role: "Staff", status: "rejected", date: "Jan 28, 2026, 1:45 PM", reviewedBy: "Admin" },
+      { id: "AR-008", teamId: "admin-department", requester: "Aina Yusuf", email: "aina.yusuf@campus.edu", department: "Administration Office", role: "Admin", status: "approved", date: "Jan 27, 2026, 11:05 AM", reviewedBy: "Admin" },
     ],
   },
 };
@@ -801,6 +905,10 @@ function getOverviewTicketsByRange() {
 }
 
 function computeOverviewDataFromTickets(tickets) {
+  // TODO_BACKEND_ADMIN_OVERVIEW_KPI:
+  // For production KPIs, backend should return first-response and resolution timestamps
+  // explicitly (e.g. first_response_at, resolved_at, sla_target_minutes) per ticket.
+  // Current frontend computes KPI approximations using created/submitted vs updated time.
   const list = Array.isArray(tickets) ? tickets : [];
   const metrics = {
     totalTickets: list.length,
@@ -810,12 +918,19 @@ function computeOverviewDataFromTickets(tickets) {
   };
   const categoryMap = new Map();
   const priorityMap = new Map([
+    ["Critical", 0],
     ["High", 0],
     ["Medium", 0],
     ["Low", 0],
   ]);
+  const categoryPerformanceMap = new Map();
   const createdByDay = new Array(7).fill(0);
   const resolvedByDay = new Array(7).fill(0);
+  let resolutionMinutesTotal = 0;
+  let resolvedCount = 0;
+  let firstResponseWithinSlaCount = 0;
+  let firstResponseEligibleCount = 0;
+  const firstResponseSlaMinutes = 120;
 
   list.forEach((ticket) => {
     const category = String(ticket.category || "General");
@@ -825,8 +940,22 @@ function computeOverviewDataFromTickets(tickets) {
     const createdDate = parseTicketCreatedDate(ticket);
     if (createdDate) createdByDay[createdDate.getDay()] += 1;
     const updatedDate = new Date(ticket.updated_at || ticket.created_at || ticket.submitted_at);
+    if (createdDate && !Number.isNaN(updatedDate.getTime())) {
+      const responseMinutes = Math.max(0, (updatedDate.getTime() - createdDate.getTime()) / 60000);
+      firstResponseEligibleCount += 1;
+      if (responseMinutes <= firstResponseSlaMinutes) firstResponseWithinSlaCount += 1;
+    }
     if (ticket.status === "Resolved" && !Number.isNaN(updatedDate.getTime())) {
       resolvedByDay[updatedDate.getDay()] += 1;
+      if (createdDate) {
+        const resolveMinutes = Math.max(0, (updatedDate.getTime() - createdDate.getTime()) / 60000);
+        resolutionMinutesTotal += resolveMinutes;
+        resolvedCount += 1;
+        const current = categoryPerformanceMap.get(category) || { label: category, volume: 0, minutesTotal: 0 };
+        current.volume += 1;
+        current.minutesTotal += resolveMinutes;
+        categoryPerformanceMap.set(category, current);
+      }
     }
   });
 
@@ -835,7 +964,7 @@ function computeOverviewDataFromTickets(tickets) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
   const total = Math.max(metrics.totalTickets, 1);
-  const priorityDistribution = ["High", "Medium", "Low"].map((label) => {
+  const priorityDistribution = ["Critical", "High", "Medium", "Low"].map((label) => {
     const value = Number(priorityMap.get(label) || 0);
     const percent = Math.round((value / total) * 100);
     return {
@@ -844,10 +973,30 @@ function computeOverviewDataFromTickets(tickets) {
       className: label.toLowerCase(),
     };
   });
+  const avgResolutionHours = resolvedCount ? resolutionMinutesTotal / resolvedCount / 60 : 0;
+  const avgResolutionTime =
+    avgResolutionHours === 0 ? "0h" : avgResolutionHours >= 10 ? `${Math.round(avgResolutionHours)}h` : `${avgResolutionHours.toFixed(1)}h`;
+  const slaResponseRate = firstResponseEligibleCount
+    ? Math.round((firstResponseWithinSlaCount / firstResponseEligibleCount) * 100)
+    : 0;
+  const topCategoryPerformance = Array.from(categoryPerformanceMap.values())
+    .sort((a, b) => b.volume - a.volume)
+    .slice(0, 3)
+    .map((entry) => {
+      const avgHours = entry.minutesTotal / Math.max(entry.volume, 1) / 60;
+      const avgLabel = avgHours >= 10 ? `${Math.round(avgHours)}h` : `${avgHours.toFixed(1)}h`;
+      return { label: entry.label, volume: entry.volume, avgResolutionTime: avgLabel };
+    });
   return {
     metrics,
+    overviewKpis: {
+      avgResolutionTime,
+      slaResponseRate,
+      criticalSharePercent: Math.round((Number(priorityMap.get("Critical") || 0) / total) * 100),
+    },
     categoryDistribution,
     priorityDistribution,
+    topCategoryPerformance,
     weeklyTrend: {
       created: createdByDay.slice(1).concat(createdByDay[0]),
       resolved: resolvedByDay.slice(1).concat(resolvedByDay[0]),
@@ -1098,10 +1247,13 @@ function animateOverviewCharts() {
 
 function renderOverview(overviewData) {
   const metrics = overviewData?.metrics || {};
+  const overviewKpis = overviewData?.overviewKpis || {};
   setText("overviewTotalTickets", metrics.totalTickets ?? 0);
-  setText("overviewOpenTickets", metrics.open ?? 0);
+  setText("overviewOpenResolvedPair", `${metrics.open ?? 0} / ${metrics.resolved ?? 0}`);
+  setText("overviewAvgResolutionTime", overviewKpis.avgResolutionTime ?? "0h");
+  setText("overviewSlaResponse", `${overviewKpis.slaResponseRate ?? 0}%`);
   setText("overviewInProgressTickets", metrics.inProgress ?? 0);
-  setText("overviewResolvedTickets", metrics.resolved ?? 0);
+  setText("overviewCriticalShare", `${overviewKpis.criticalSharePercent ?? 0}%`);
 
   const bars = document.getElementById("overviewCategoryBars");
   const yAxis = document.getElementById("overviewCategoryYAxis");
@@ -1164,13 +1316,37 @@ function renderOverview(overviewData) {
     let progress = 0;
     const gradientParts = priorities.map((item) => {
       const color =
-        item.className === "high" ? "#ef4444" : item.className === "medium" ? "#f97316" : "#6b7280";
+        item.className === "critical"
+          ? "#7f1d1d"
+          : item.className === "high"
+            ? "#ef4444"
+            : item.className === "medium"
+              ? "#f97316"
+              : "#6b7280";
       const start = progress;
       progress += Number(item.percent || 0);
       return `${color} ${start}% ${progress}%`;
     });
     priorityPie.style.background = `conic-gradient(${gradientParts.join(", ")})`;
     bindPieHoverTooltip(priorityPie, priorities, Number(metrics.totalTickets || 0));
+  }
+
+  const topCategoryPerformance = document.getElementById("overviewTopCategoryPerformance");
+  if (topCategoryPerformance) {
+    const rows = Array.isArray(overviewData?.topCategoryPerformance) ? overviewData.topCategoryPerformance : [];
+    topCategoryPerformance.innerHTML = rows.length
+      ? rows
+          .map(
+            (entry) => `
+          <article class="top-category-row">
+            <p class="top-category-name">${escapeHtml(entry.label)}</p>
+            <p class="top-category-meta">${escapeHtml(String(entry.volume))} tickets</p>
+            <p class="top-category-time">${escapeHtml(entry.avgResolutionTime)}</p>
+          </article>
+        `
+          )
+          .join("")
+      : `<p class="meta">No category performance data available.</p>`;
   }
 
   const trend = overviewData?.weeklyTrend || {};
@@ -1508,7 +1684,6 @@ function renderSupportTeams(data) {
       }" data-support-team-id="${escapeHtml(team.id)}">
         <div class="support-team-top">
           <span class="support-team-badge ${escapeHtml(team.badgeClass)}">${escapeHtml(team.badge)}</span>
-          <span class="support-team-dotmenu">⋮</span>
         </div>
         <h4>${escapeHtml(team.name)}</h4>
         <p>${escapeHtml(team.members)} members</p>
@@ -1580,6 +1755,9 @@ function renderSupportTeams(data) {
     return role === "staff" || role === "admin";
   });
   const filtered = requests.filter((req) => {
+    if (activeSupportTab === "permissions") {
+      return supportRequestFilterValue === "all" ? true : String(req.status) === supportRequestFilterValue;
+    }
     const sameTeam = String(req.teamId || "") === String(activeTeam.id || "");
     if (!sameTeam) return false;
     return supportRequestFilterValue === "all" ? true : String(req.status) === supportRequestFilterValue;
@@ -1596,7 +1774,12 @@ function renderSupportTeams(data) {
         <td class="request-actions">
           ${
             activeSupportTab === "permissions" && String(req.status) === "pending"
-              ? `<button type="button" class="link-btn approve" data-request-action="approve" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Approve</button><button type="button" class="link-btn reject" data-request-action="reject" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Reject</button>`
+              ? (() => {
+                  const role = String(req.role || "").toLowerCase();
+                  const canReview = role !== "admin" || isSystemAdminSession(session);
+                  if (!canReview) return `<span class="sub">System admin approval required</span>`;
+                  return `<button type="button" class="link-btn approve" data-request-action="approve" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Approve</button><button type="button" class="link-btn reject" data-request-action="reject" data-request-id="${escapeHtml(req.id || "")}" data-request-email="${escapeHtml(req.email || "")}" data-request-role="${escapeHtml(req.role || "")}">Reject</button>`;
+                })()
               : `<span class="sub">${escapeHtml(req.reviewedBy ? `Reviewed by ${req.reviewedBy}` : "No actions")}</span>`
           }
         </td>
@@ -1731,10 +1914,24 @@ supportAccessBody?.addEventListener("click", (event) => {
   const requestEmail = String(target.dataset.requestEmail || "").toLowerCase();
   const requestRole = String(target.dataset.requestRole || "").toLowerCase();
   if (!requestEmail || !requestRole) return;
+  if (requestRole === "admin" && !isSystemAdminSession(session)) {
+    showUpdateToast({
+      title: "Action blocked",
+      detail: "Only system admin can approve or reject admin requests.",
+      tone: "warning",
+    });
+    return;
+  }
 
   const nextStatus = action === "approve" ? "approved" : "rejected";
   const reviewer = session?.email || "Admin";
   const currentState = supportTeamsState || mockAdminData.supportTeams;
+  const matchedRequest = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).find((req) => {
+    const sameId = requestId && String(req.id || "") === requestId;
+    const sameIdentity =
+      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
+    return sameId || sameIdentity;
+  });
   const nextAccess = (Array.isArray(currentState?.accessRequests) ? currentState.accessRequests : []).map((req) => {
     const sameId = requestId && String(req.id || "") === requestId;
     const sameIdentity =
@@ -1742,14 +1939,85 @@ supportAccessBody?.addEventListener("click", (event) => {
     if (!sameId && !sameIdentity) return req;
     return { ...req, status: nextStatus, reviewedBy: reviewer };
   });
-  supportTeamsState = { ...currentState, accessRequests: nextAccess };
+  let nextTeams = Array.isArray(currentState?.teams) ? [...currentState.teams] : [];
+  let resolvedTeamId = String(matchedRequest?.teamId || "");
+  if (nextStatus === "approved") {
+    const requestDepartment = String(matchedRequest?.department || "").trim();
+    let teamIndex = -1;
+    if (resolvedTeamId) {
+      teamIndex = nextTeams.findIndex((team) => String(team.id || "") === resolvedTeamId);
+    }
+    if (teamIndex < 0 && requestDepartment) {
+      teamIndex = nextTeams.findIndex(
+        (team) => String(team.name || "").trim().toLowerCase() === requestDepartment.toLowerCase()
+      );
+    }
+    if (teamIndex < 0) {
+      const newDepartmentName = requestDepartment || "General Department";
+      const fallbackName = requestEmail.split("@")[0];
+      const newTeam = createSupportTeamRecord(
+        {
+          name: newDepartmentName,
+          lead: String(matchedRequest?.requester || fallbackName),
+          email: requestEmail,
+        },
+        nextTeams
+      );
+      newTeam.leadRole = requestRole === "admin" ? "Admin" : "Support Staff";
+      if (Array.isArray(newTeam.staffMembers) && newTeam.staffMembers.length) {
+        newTeam.staffMembers[0] = {
+          ...newTeam.staffMembers[0],
+          role: requestRole === "admin" ? "Admin" : "Support Staff",
+        };
+      }
+      nextTeams.push(newTeam);
+      teamIndex = nextTeams.length - 1;
+      resolvedTeamId = String(newTeam.id || "");
+      activeSupportTeamId = resolvedTeamId;
+    }
+    if (teamIndex >= 0) {
+      const team = nextTeams[teamIndex];
+      resolvedTeamId = String(team.id || resolvedTeamId);
+      const staffMembers = Array.isArray(team.staffMembers) ? [...team.staffMembers] : [];
+      const alreadyInTeam = staffMembers.some((staff) => String(staff.email || "").toLowerCase() === requestEmail);
+      if (!alreadyInTeam) {
+        const fallbackName = requestEmail.split("@")[0];
+        const roleLabel = requestRole === "admin" ? "Admin" : "Support Staff";
+        staffMembers.push({
+          name: String(matchedRequest?.requester || fallbackName),
+          role: roleLabel,
+          email: requestEmail,
+          phone: "-",
+          activeTickets: 0,
+        });
+      }
+      nextTeams[teamIndex] = {
+        ...team,
+        staffMembers,
+        members: staffMembers.length,
+      };
+    }
+  }
+  const nextAccessWithTeam = nextAccess.map((req) => {
+    const sameId = requestId && String(req.id || "") === requestId;
+    const sameIdentity =
+      String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
+    if (!sameId && !sameIdentity) return req;
+    return resolvedTeamId ? { ...req, teamId: resolvedTeamId } : req;
+  });
+  supportTeamsState = { ...currentState, accessRequests: nextAccessWithTeam, teams: nextTeams };
 
   const localRequests = loadLocalAccessRequests().map((req) => {
     const sameId = requestId && String(req.id || "") === requestId;
     const sameIdentity =
       String(req.email || "").toLowerCase() === requestEmail && String(req.role || "").toLowerCase() === requestRole;
     if (!sameId && !sameIdentity) return req;
-    return { ...req, status: nextStatus, reviewedBy: reviewer };
+    return {
+      ...req,
+      status: nextStatus,
+      reviewedBy: reviewer,
+      ...(resolvedTeamId ? { teamId: resolvedTeamId } : {}),
+    };
   });
   saveLocalAccessRequests(localRequests);
 

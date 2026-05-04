@@ -7,35 +7,99 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./ticket-view-shared.css" />
     <link rel="stylesheet" href="./admin.css" />
   </head>
   <body>
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
       <div class="admin-brand">
-        <p class="brand-kicker">QuickAid</p>
-        <h1>Admin Panel</h1>
+        <div class="admin-brand-logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L4 7V12C4 16.97 7.34 21.47 12 22C16.66 21.47 20 16.97 20 12V7L12 3Z" fill="currentColor" opacity="0.9" />
+            <path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="admin-brand-text">
+          <div class="admin-brand-title">QuickAid</div>
+          <div class="admin-brand-sub">Admin Panel</div>
+        </div>
       </div>
+
       <nav class="admin-nav" aria-label="Admin sections">
         <a href="#overview" class="admin-nav-link active" data-page-link="overview">Overview</a>
         <a href="#manage-tickets" class="admin-nav-link" data-page-link="manage-tickets">Manage Tickets</a>
         <a href="#support-teams" class="admin-nav-link" data-page-link="support-teams">Support Teams</a>
       </nav>
-      <div class="admin-sidebar-actions">
-        <button id="adminLogoutBtn" type="button" class="danger-btn">Log Out</button>
-      </div>
+
     </aside>
 
     <main class="admin-main">
-      <header class="admin-header">
-        <div>
-          <p class="meta">Today</p>
-          <h2>Admin&rsquo;s Dashboard</h2>
-          <p class="sub" id="adminSessionLabel">Signed in as admin</p>
+      <header class="app-header">
+        <div class="brand">
+          <p class="brand-kicker">Smart Campus Help Desk</p>
+          <div class="brand-row">
+            <h1>QuickAid</h1>
+            <div class="header-actions">
+              <div class="notif-wrap">
+                <button
+                  type="button"
+                  class="notif-action"
+                  id="adminBtnNotifications"
+                  aria-haspopup="menu"
+                  aria-controls="adminNotifDropdown"
+                  aria-expanded="false"
+                  aria-label="Notifications"
+                >
+                  <span class="notif-bell" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 22C13.1046 22 14 21.1046 14 20H10C10 21.1046 10.8954 22 12 22Z" fill="currentColor" />
+                      <path
+                        d="M18 16.0001H6C5.44772 16.0001 5 15.5523 5 15.0001C5 14.6234 5.20711 14.2741 5.54253 14.0937C6.29012 13.6942 7 12.9206 7 11.0001V8.5001C7 6.01483 8.79086 4.13745 11.232 4.01525C11.4821 4.00244 11.733 4.00244 11.9831 4.01525C14.4242 4.13745 16.2151 6.01483 16.2151 8.5001V11.0001C16.2151 12.9206 16.925 13.6942 17.6726 14.0937C18.008 14.2741 18.2151 14.6234 18.2151 15.0001C18.2151 15.5523 17.7674 16.0001 17.2151 16.0001H18Z"
+                        fill="currentColor"
+                        opacity="0.95"
+                      />
+                    </svg>
+                  </span>
+                  <span class="notif-badge hidden" id="adminNotifBadge" aria-label="Unread notifications count">0</span>
+                </button>
+
+                <div class="notif-dropdown hidden" id="adminNotifDropdown" role="menu" aria-label="Notifications dropdown">
+                  <div class="notif-card">
+                    <div class="notif-head">
+                      <div class="notif-title">Notifications</div>
+                      <div class="notif-sub">
+                        You have <span class="notif-unread-count" id="adminNotifUnreadCount">0</span> unread notifications
+                      </div>
+                    </div>
+                    <div class="notif-divider" aria-hidden="true"></div>
+                    <ul class="notif-list" id="adminNotifList"></ul>
+                    <div class="notif-divider notif-divider-bottom" aria-hidden="true"></div>
+                    <button type="button" class="notif-mark-all" id="adminBtnMarkAllRead">Mark all as read</button>
+                  </div>
+                </div>
+              </div>
+              <a class="ghost-action auth-link icon-login hidden" id="adminBtnSignIn" href="./login.html" aria-label="Login">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" fill="currentColor" />
+                  <path d="M4 20C4 16.6863 7.13401 14 11 14H13C16.866 14 20 16.6863 20 20V22H4V20Z" fill="currentColor" opacity="0.9" />
+                </svg>
+              </a>
+              <button type="button" class="ghost-action auth-link icon-login icon-logout hidden" id="adminBtnLogout" aria-label="Log out">
+                <span class="notif-bell" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 17L15 12L10 7" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M15 12H4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                    <path d="M13 4H17C18.1046 4 19 4.89543 19 6V18C19 19.1046 18.1046 20 17 20H13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
+        <p class="header-copy" id="adminSessionLabel"> Signed in as admin</p>
       </header>
 
       <section id="overview" class="admin-page active" aria-labelledby="overviewTitle">
@@ -304,6 +368,31 @@
         </form>
       </div>
     </div>
+
+    <footer class="admin-footer university-footer" aria-label="Admin portal footer">
+      <div class="footer-grid">
+        <section class="footer-block">
+          <h2>QuickAid Administration</h2>
+          <p>Administrative console for service operations, assignment workflows, and campus support team governance.</p>
+        </section>
+        <section class="footer-block">
+          <h3>Operations Contact</h3>
+          <p>Email: quickaid.ops@campus.edu</p>
+          <p>Phone: +60 3-8899 4101</p>
+          <p>Escalation: noc@campus.edu</p>
+        </section>
+        <section class="footer-block">
+          <h3>Admin Service Window</h3>
+          <p>Daily Monitoring: 8:00 AM - 10:00 PM</p>
+          <p>Incident Response: 24/7 on-call rotation</p>
+          <p>Last sync source: QuickAid Service Desk Policy 2026</p>
+        </section>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 QuickAid Services</span>
+        <span>Authorized Personnel Use Only</span>
+      </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="./ticket-view-shared.js" defer></script>

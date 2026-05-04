@@ -2,6 +2,7 @@ const sessionKey = "quickaid-session-v1";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const accountsStorageKey = "quickaid-accounts-v1";
 const accessRequestsStorageKey = "quickaid-access-requests-v1";
+const SYSTEM_ADMIN_EMAIL = "admin@campus.edu";
 
 function saveSession(session) {
   localStorage.setItem(sessionKey, JSON.stringify(session));
@@ -54,7 +55,7 @@ function normalizeEmail(value) {
 
 function isAdminEmail(email) {
   const normalized = normalizeEmail(email);
-  return normalized === "admin@campus.edu";
+  return normalized === SYSTEM_ADMIN_EMAIL;
 }
 
 function resolveRoleFromEmail(email, fallbackRole = "user") {
@@ -78,12 +79,13 @@ function toDashboard(session) {
 
 function createAccessRequestFromAccount(account) {
   const normalizedRole = normalizeRole(account?.role);
+  const isAdminRequest = normalizedRole === "admin";
   return {
-    teamId: "technical",
+    teamId: isAdminRequest ? "admin-department" : "technical",
     requester: account.name || "Requester",
     email: account.email,
-    department: "IT Services",
-    role: normalizedRole === "admin" ? "Admin" : "Staff",
+    department: isAdminRequest ? "Administration Office" : "IT Services",
+    role: isAdminRequest ? "Admin" : "Staff",
     status: "pending",
     date: new Date().toLocaleString(),
     created_at: new Date().toISOString(),
@@ -100,9 +102,12 @@ function upsertAccountRecord(payload) {
     email,
     name: String(payload.name || existing?.name || "Portal User"),
     role,
+    isSystemAdmin: role === "admin" && isAdminEmail(email),
     password: String(payload.password || existing?.password || ""),
     approvalStatus:
-      role === "staff" || role === "admin"
+      role === "admin" && isAdminEmail(email)
+        ? "approved"
+        : role === "staff" || role === "admin"
         ? (payload.approvalStatus || existing?.approvalStatus || "pending")
         : "approved",
     updated_at: new Date().toISOString(),
@@ -236,6 +241,7 @@ if (loginForm) {
     const existing = accounts.find((item) => normalizeEmail(item.email) === normalizeEmail(email));
     const resolvedRole = existing?.role || resolveRoleFromEmail(email, "user");
     if (
+      !isAdminEmail(email) &&
       (resolvedRole === "staff" || resolvedRole === "admin") &&
       String(existing?.approvalStatus || "pending") !== "approved"
     ) {
