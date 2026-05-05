@@ -188,6 +188,7 @@ textarea:focus-visible {
   justify-content: center;
   cursor: pointer;
   position: relative;
+  overflow: visible;
   transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
 }
 
@@ -204,10 +205,11 @@ textarea:focus-visible {
 
 .notif-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  min-width: 20px;
-  height: 20px;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -35%);
+  min-width: 23px;
+  height: 23px;
   padding: 0 6px;
   border-radius: 999px;
   background: var(--danger);
@@ -454,7 +456,6 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   background: #eaf3ff;
-  color: var(--primary);
   border: 1px solid #cfe1fb;
   border-radius: 12px;
   font-weight: 700;

@@ -317,6 +317,7 @@ body {
   justify-content: center;
   cursor: pointer;
   position: relative;
+  overflow: visible;
   transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
 }
 
@@ -335,10 +336,11 @@ body {
 
 .notif-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  min-width: 20px;
-  height: 20px;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -35%);
+  min-width: 23px;
+  height: 23px;
   padding: 0 6px;
   border-radius: 999px;
   background: var(--danger);

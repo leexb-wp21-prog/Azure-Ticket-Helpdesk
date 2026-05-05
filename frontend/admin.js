@@ -501,6 +501,10 @@ function resolveApiUrl(path) {
 }
 
 async function fetchJsonOrFallback(path, fallbackData) {
+  // BACKEND NOTE:
+  // All admin pages currently run in "API with local fallback" mode.
+  // If request fails, UI uses bundled mock payload so frontend flows remain testable.
+  // Remove fallback return once backend coverage/reliability is complete for all routes.
   const url = resolveApiUrl(path);
   try {
     const response = await fetch(url);
@@ -703,7 +707,9 @@ function createSupportTeamRecord(input, existingTeams) {
 }
 
 async function persistSupportTeamCreate(team) {
-  // TODO_BACKEND_REAL_DATA: replace local-first create with backend-first create once API is stable.
+  // BACKEND NOTE:
+  // Expected endpoint: POST /api/admin/support_teams
+  // Expected behavior: return created team (id, members, stats, staffMembers) to replace optimistic local record.
   try {
     const response = await fetch(resolveApiUrl("/api/admin/support_teams"), {
       method: "POST",
@@ -767,7 +773,7 @@ async function handleAddSupportTeam(payload) {
   const newTeam = createSupportTeamRecord(payload, teams);
   const nextState = {
     ...currentState,
-    // TEMP_DATA: keep local insert so frontend can be tested before backend API is ready.
+    // BACKEND NOTE: local-first optimistic insert for preview mode; backend response should become source of truth.
     teams: [...teams, newTeam],
   };
   supportTeamsState = nextState;
@@ -831,13 +837,16 @@ function createSupportStaffRecord(input) {
     name,
     role,
     email,
-    // Temporary preview default while backend enriches profile details.
+    // BACKEND NOTE: placeholder until backend returns canonical phone/profile enrichment.
     phone,
     activeTickets: 0,
   };
 }
 
 async function persistSupportStaffCreate(teamId, staff) {
+  // BACKEND NOTE:
+  // Expected endpoint: POST /api/admin/support_teams/:teamId/staff
+  // Expected behavior: return created staff member and updated team counters.
   try {
     const response = await fetch(resolveApiUrl(`/api/admin/support_teams/${encodeURIComponent(teamId)}/staff`), {
       method: "POST",
@@ -995,10 +1004,12 @@ function getOverviewTicketsByRange() {
 }
 
 function computeOverviewDataFromTickets(tickets) {
-  // TODO_BACKEND_ADMIN_OVERVIEW_KPI:
-  // For production KPIs, backend should return first-response and resolution timestamps
-  // explicitly (e.g. first_response_at, resolved_at, sla_target_minutes) per ticket.
-  // Current frontend computes KPI approximations using created/submitted vs updated time.
+  // BACKEND NOTE (KPI CONTRACT):
+  // Production response should include server-computed KPI fields per ticket or aggregate:
+  // - first_response_at
+  // - resolved_at
+  // - sla_target_minutes
+  // Current client values are approximations derived from created/submitted vs updated timestamps.
   const list = Array.isArray(tickets) ? tickets : [];
   const metrics = {
     totalTickets: list.length,
@@ -1486,6 +1497,11 @@ function recalculateOverviewMetrics() {
 }
 
 async function persistOverviewTicketUpdate(ticket) {
+  // BACKEND NOTE:
+  // Expected endpoints:
+  // - PATCH /api/admin/tickets/:id/status      body: { status }
+  // - PATCH /api/admin/tickets/:id/assignment  body: { assignedTeam }
+  // Both should return updated ticket payload for strict client/server consistency.
   if (!API_BASE) return true;
   try {
     const [statusRes, teamRes] = await Promise.all([
@@ -2008,6 +2024,13 @@ async function applyTicketChanges(ticket, nextStatus, nextTeam, triggerButton = 
 }
 
 async function loadAdminData() {
+  // BACKEND NOTE (READ CONTRACT):
+  // Required routes for live mode:
+  // - GET /api/admin/overview?range=<today|week|month|year>
+  // - GET /api/admin/tickets
+  // - GET /api/admin/analytics
+  // - GET /api/admin/support_teams
+  // Any route failure currently falls back to mock payload to keep UI available.
   const [overviewRes, manageRes, analyticsRes, teamsRes] = await Promise.all([
     fetchJsonOrFallback(
       `/api/admin/overview?range=${encodeURIComponent(activeRange)}`,
