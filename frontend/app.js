@@ -49,6 +49,27 @@ const btnAdminPanel = document.getElementById("btnAdminPanel");
 const sidebarDashboardBtn = document.getElementById("sidebarDashboardBtn");
 const sidebarKnowledgeBtn = document.getElementById("sidebarKnowledgeBtn");
 const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+
+// ─── User sidebar toggle ───
+const userSidebar = document.querySelector(".sidebar");
+const userSidebarToggleBtn = document.getElementById("userSidebarToggleBtn");
+
+(function initUserSidebarState() {
+  const saved = localStorage.getItem("userSidebarCollapsed");
+  if (saved === "false") {
+    userSidebar?.classList.remove("collapsed");
+    document.body.classList.add("sidebar-open");
+    userSidebarToggleBtn?.setAttribute("aria-expanded", "true");
+  }
+})();
+
+userSidebarToggleBtn?.addEventListener("click", () => {
+  const isNowCollapsed = userSidebar.classList.toggle("collapsed");
+  document.body.classList.toggle("sidebar-open", !isNowCollapsed);
+  userSidebarToggleBtn.setAttribute("aria-expanded", String(!isNowCollapsed));
+  localStorage.setItem("userSidebarCollapsed", String(isNowCollapsed));
+});
+
 const statusBanner = document.getElementById("statusBanner");
 const quickMetrics = document.querySelector(".quick-metrics");
 

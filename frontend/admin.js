@@ -57,6 +57,24 @@ if (!isAdminSession(session)) {
   window.location.replace("./index.html");
 }
 
+// ─── Sidebar toggle ───
+const adminSidebar = document.querySelector(".admin-sidebar");
+const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+
+(function initSidebarState() {
+  const saved = localStorage.getItem("adminSidebarCollapsed");
+  if (saved === "false") {
+    adminSidebar?.classList.remove("collapsed");
+    sidebarToggleBtn?.setAttribute("aria-expanded", "true");
+  }
+})();
+
+sidebarToggleBtn?.addEventListener("click", () => {
+  const isNowCollapsed = adminSidebar.classList.toggle("collapsed");
+  sidebarToggleBtn.setAttribute("aria-expanded", String(!isNowCollapsed));
+  localStorage.setItem("adminSidebarCollapsed", String(isNowCollapsed));
+});
+
 const adminSessionLabel = document.getElementById("adminSessionLabel");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
 const adminBtnSignIn = document.getElementById("adminBtnSignIn");

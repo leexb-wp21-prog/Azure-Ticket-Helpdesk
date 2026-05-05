@@ -83,9 +83,10 @@ textarea:focus-visible {
 .app-header {
   padding: 2rem 1rem 1rem;
   max-width: 1200px;
-  margin: 0 0 0 260px;
+  margin: 0 0 0 52px;
   display: grid;
   gap: 0.7rem;
+  transition: margin 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 980px) {
@@ -424,7 +425,8 @@ textarea:focus-visible {
 /* Layout with left sidebar (matches screenshots) */
 .main-layout {
   max-width: 1200px;
-  margin-left: 260px;
+  margin-left: 52px;
+  transition: margin-left 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar {
@@ -438,6 +440,43 @@ textarea:focus-visible {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1), padding 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+/* ─── Sidebar toggle button ─── */
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--surface-hover);
+  color: var(--primary);
+  border-color: #c5d4e5;
+}
+
+.sidebar-toggle-btn .icon-open { display: block; }
+.sidebar-toggle-btn .icon-close { display: none; }
+.sidebar:not(.collapsed) .sidebar-toggle-btn .icon-open { display: none; }
+.sidebar:not(.collapsed) .sidebar-toggle-btn .icon-close { display: block; }
+
+/* ─── Sidebar content fade when collapsed ─── */
+.sidebar-brand,
+.sidebar-nav {
+  transition: opacity 180ms ease, visibility 180ms ease;
 }
 
 .sidebar-brand {
@@ -1575,7 +1614,8 @@ button.ghost {
 }
 
 .app-footer {
-  margin-left: 260px;
+  margin-left: 52px;
+  transition: margin-left 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .university-footer {
@@ -2445,8 +2485,37 @@ body[data-role="staff"] {
   }
 }
 
+/* ─── Desktop sidebar collapse behaviour ─── */
+@media (min-width: 981px) {
+  .sidebar.collapsed {
+    width: 52px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .sidebar.collapsed .sidebar-brand,
+  .sidebar.collapsed .sidebar-nav {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body.sidebar-open .app-header {
+    margin: 0 0 0 260px;
+  }
+
+  body.sidebar-open .main-layout,
+  body.sidebar-open .app-footer {
+    margin-left: 260px;
+  }
+}
+
 @media (max-width: 980px) {
   .app-footer {
+    margin-left: 0;
+  }
+
+  .app-header {
     margin-left: 0;
   }
 }

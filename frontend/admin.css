@@ -71,6 +71,43 @@ body {
   padding: 1rem 1rem 1.2rem;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1), padding 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+/* ─── Sidebar toggle button ─── */
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--surface-hover);
+  color: var(--primary);
+  border-color: #c5d4e5;
+}
+
+.sidebar-toggle-btn .icon-open { display: block; }
+.sidebar-toggle-btn .icon-close { display: none; }
+.admin-sidebar:not(.collapsed) .sidebar-toggle-btn .icon-open { display: none; }
+.admin-sidebar:not(.collapsed) .sidebar-toggle-btn .icon-close { display: block; }
+
+/* ─── Sidebar content fade when collapsed ─── */
+.admin-brand,
+.admin-nav {
+  transition: opacity 180ms ease, visibility 180ms ease;
 }
 
 /* Brand block — mirrors sidebar-brand + logo */
@@ -240,12 +277,13 @@ body {
 }
 
 .admin-main {
-  margin-left: 250px;
+  margin-left: 52px;
   padding: 1.5rem 1.25rem 1.25rem;
   display: grid;
   gap: 1rem;
   min-height: 100vh;
   align-content: start;
+  transition: margin-left 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-page {
@@ -1820,7 +1858,8 @@ th {
 .link-btn.reject { color: #a93345; }
 
 .admin-footer {
-  margin-left: 250px;
+  margin-left: 52px;
+  transition: margin-left 260ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .university-footer {
@@ -1871,6 +1910,27 @@ th {
   flex-wrap: wrap;
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+/* ─── Desktop sidebar collapse behaviour ─── */
+@media (min-width: 1081px) {
+  .admin-sidebar.collapsed {
+    width: 52px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .admin-sidebar.collapsed .admin-brand,
+  .admin-sidebar.collapsed .admin-nav {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .admin-sidebar:not(.collapsed) ~ .admin-main,
+  .admin-sidebar:not(.collapsed) ~ .admin-footer {
+    margin-left: 250px;
+  }
 }
 
 @media (max-width: 1080px) {
