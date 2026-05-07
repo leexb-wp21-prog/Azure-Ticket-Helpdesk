@@ -62,7 +62,12 @@ const adminSidebar = document.querySelector(".admin-sidebar");
 const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
 const mobileSidebarToggleBtn = document.getElementById("mobileSidebarToggleBtn");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
-const mobileMediaQuery = window.matchMedia("(max-width: 1080px)");
+const mobileMediaQuery = typeof window.matchMedia === "function" ? window.matchMedia("(max-width: 1080px)") : null;
+
+function isMobileViewport() {
+  if (mobileMediaQuery) return mobileMediaQuery.matches;
+  return window.innerWidth <= 1080;
+}
 
 function setSidebarState(isCollapsed, shouldPersist = true) {
   adminSidebar?.classList.toggle("collapsed", isCollapsed);
@@ -70,7 +75,7 @@ function setSidebarState(isCollapsed, shouldPersist = true) {
   sidebarToggleBtn?.setAttribute("aria-expanded", expanded);
   mobileSidebarToggleBtn?.setAttribute("aria-expanded", expanded);
 
-  const isMobile = mobileMediaQuery.matches;
+  const isMobile = isMobileViewport();
   if (sidebarOverlay) {
     const showOverlay = isMobile && !isCollapsed;
     sidebarOverlay.hidden = !showOverlay;
@@ -85,7 +90,7 @@ function setSidebarState(isCollapsed, shouldPersist = true) {
 
 (function initSidebarState() {
   const saved = localStorage.getItem("adminSidebarCollapsed");
-  const shouldOpen = saved === "false" && !mobileMediaQuery.matches;
+  const shouldOpen = saved === "false" && !isMobileViewport();
   setSidebarState(!shouldOpen, false);
 })();
 
@@ -98,10 +103,20 @@ sidebarToggleBtn?.addEventListener("click", toggleSidebar);
 mobileSidebarToggleBtn?.addEventListener("click", toggleSidebar);
 sidebarOverlay?.addEventListener("click", () => setSidebarState(true, false));
 
-mobileMediaQuery.addEventListener("change", () => {
+const handleViewportChange = () => {
   const isCollapsed = adminSidebar?.classList.contains("collapsed") ?? true;
   setSidebarState(isCollapsed, false);
-});
+};
+
+if (mobileMediaQuery) {
+  if (typeof mobileMediaQuery.addEventListener === "function") {
+    mobileMediaQuery.addEventListener("change", handleViewportChange);
+  } else if (typeof mobileMediaQuery.addListener === "function") {
+    mobileMediaQuery.addListener(handleViewportChange);
+  }
+} else {
+  window.addEventListener("resize", handleViewportChange);
+}
 
 const adminSessionLabel = document.getElementById("adminSessionLabel");
 const adminLogoutBtn = document.getElementById("adminLogoutBtn");
