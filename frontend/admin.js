@@ -60,19 +60,47 @@ if (!isAdminSession(session)) {
 // ─── Sidebar toggle ───
 const adminSidebar = document.querySelector(".admin-sidebar");
 const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+const mobileSidebarToggleBtn = document.getElementById("mobileSidebarToggleBtn");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
+const mobileMediaQuery = window.matchMedia("(max-width: 1080px)");
+
+function setSidebarState(isCollapsed, shouldPersist = true) {
+  adminSidebar?.classList.toggle("collapsed", isCollapsed);
+  const expanded = String(!isCollapsed);
+  sidebarToggleBtn?.setAttribute("aria-expanded", expanded);
+  mobileSidebarToggleBtn?.setAttribute("aria-expanded", expanded);
+
+  const isMobile = mobileMediaQuery.matches;
+  if (sidebarOverlay) {
+    const showOverlay = isMobile && !isCollapsed;
+    sidebarOverlay.hidden = !showOverlay;
+    sidebarOverlay.classList.toggle("active", showOverlay);
+  }
+  document.body.classList.toggle("sidebar-mobile-open", isMobile && !isCollapsed);
+
+  if (shouldPersist) {
+    localStorage.setItem("adminSidebarCollapsed", String(isCollapsed));
+  }
+}
 
 (function initSidebarState() {
   const saved = localStorage.getItem("adminSidebarCollapsed");
-  if (saved === "false") {
-    adminSidebar?.classList.remove("collapsed");
-    sidebarToggleBtn?.setAttribute("aria-expanded", "true");
-  }
+  const shouldOpen = saved === "false" && !mobileMediaQuery.matches;
+  setSidebarState(!shouldOpen, false);
 })();
 
-sidebarToggleBtn?.addEventListener("click", () => {
-  const isNowCollapsed = adminSidebar.classList.toggle("collapsed");
-  sidebarToggleBtn.setAttribute("aria-expanded", String(!isNowCollapsed));
-  localStorage.setItem("adminSidebarCollapsed", String(isNowCollapsed));
+function toggleSidebar() {
+  const isNowCollapsed = !adminSidebar || !adminSidebar.classList.contains("collapsed") ? true : false;
+  setSidebarState(isNowCollapsed);
+}
+
+sidebarToggleBtn?.addEventListener("click", toggleSidebar);
+mobileSidebarToggleBtn?.addEventListener("click", toggleSidebar);
+sidebarOverlay?.addEventListener("click", () => setSidebarState(true, false));
+
+mobileMediaQuery.addEventListener("change", () => {
+  const isCollapsed = adminSidebar?.classList.contains("collapsed") ?? true;
+  setSidebarState(isCollapsed, false);
 });
 
 const adminSessionLabel = document.getElementById("adminSessionLabel");

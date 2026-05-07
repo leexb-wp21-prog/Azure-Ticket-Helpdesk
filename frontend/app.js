@@ -58,14 +58,12 @@ const userSidebarToggleBtn = document.getElementById("userSidebarToggleBtn");
   const saved = localStorage.getItem("userSidebarCollapsed");
   if (saved === "false") {
     userSidebar?.classList.remove("collapsed");
-    document.body.classList.add("sidebar-open");
     userSidebarToggleBtn?.setAttribute("aria-expanded", "true");
   }
 })();
 
 userSidebarToggleBtn?.addEventListener("click", () => {
   const isNowCollapsed = userSidebar.classList.toggle("collapsed");
-  document.body.classList.toggle("sidebar-open", !isNowCollapsed);
   userSidebarToggleBtn.setAttribute("aria-expanded", String(!isNowCollapsed));
   localStorage.setItem("userSidebarCollapsed", String(isNowCollapsed));
 });
