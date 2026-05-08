@@ -4,6 +4,9 @@ const accountsStorageKey = "quickaid-accounts-v1";
 const accessRequestsStorageKey = "quickaid-access-requests-v1";
 const SYSTEM_ADMIN_EMAIL = "admin@campus.edu";
 
+const authHeading = document.querySelector(".login-page .entra-panel h1");
+if (authHeading) authHeading.textContent = "Welcome back👋";
+
 function saveSession(session) {
   localStorage.setItem(sessionKey, JSON.stringify(session));
 }

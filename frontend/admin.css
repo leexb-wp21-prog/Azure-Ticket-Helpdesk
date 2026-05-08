@@ -1,20 +1,23 @@
 :root {
-  --bg: #f6f8fb;
-  --panel: #ffffff;
-  --text-strong: #1a2430;
-  --text: #24303d;
-  --text-muted: #556476;
-  --muted: #667689;
-  --line: #d5dee8;
-  --primary: #245ea8;
-  --primary-hover: #2f6dbc;
-  --primary-strong: #1f4f8d;
-  --primary-soft: #edf4fb;
-  --surface-hover: #f4f7fb;
-  --surface-active: #ecf2f8;
-  --danger: #a93345;
-  --ok: #1f7a57;
-  --warning: #8a680f;
+  --bg: oklch(96.8% 0.008 248);
+  --panel: oklch(99% 0.004 248);
+  --panel-raised: oklch(100% 0.003 248);
+  --text-strong: oklch(25% 0.025 248);
+  --text: oklch(33% 0.027 248);
+  --text-muted: oklch(47% 0.032 248);
+  --muted: oklch(55% 0.03 248);
+  --line: oklch(88% 0.018 248);
+  --primary: oklch(46% 0.12 253);
+  --primary-hover: oklch(42% 0.13 253);
+  --primary-strong: oklch(35% 0.12 253);
+  --primary-soft: oklch(95% 0.025 253);
+  --surface-hover: oklch(96% 0.012 248);
+  --surface-active: oklch(93.5% 0.018 248);
+  --danger: oklch(44% 0.13 20);
+  --ok: oklch(45% 0.11 155);
+  --warning: oklch(48% 0.105 80);
+  --shadow-sm: 0 1px 2px rgba(23, 35, 54, 0.06);
+  --shadow-md: 0 12px 30px rgba(23, 35, 54, 0.08);
 }
 
 * {
@@ -55,7 +58,7 @@ body {
   font-family: "Source Sans 3", sans-serif;
   color: var(--text);
   line-height: 1.5;
-  background: radial-gradient(circle at top right, #ddecff, transparent 42%), var(--bg);
+  background: linear-gradient(180deg, oklch(98.5% 0.006 248), var(--bg) 380px);
 }
 
 /* ─── Sidebar — matches user portal .sidebar exactly ─── */
@@ -66,7 +69,7 @@ body {
   width: 250px;
   min-height: 100vh;
   border-right: 1px solid var(--line);
-  background: var(--panel);
+  background: var(--panel-raised);
   color: var(--text);
   padding: 1rem 1rem 1.2rem;
   display: flex;
@@ -154,10 +157,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eaf3ff;
+  background: var(--primary-soft);
   color: var(--primary);
   border: 1px solid #cfe1fb;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 700;
 }
 
@@ -214,7 +217,7 @@ body {
   color: var(--text);
   border: 0;
   background: transparent;
-  border-radius: 0.9rem;
+  border-radius: 0.55rem;
   padding: 0.8rem 0.85rem;
   font-family: inherit;
   font-size: inherit;
@@ -231,8 +234,9 @@ body {
 }
 
 .admin-nav-link.active {
-  background: #8fb3ff66;
-  border: 1px solid #8fb3ff99;
+  background: var(--primary-soft);
+  border: 1px solid oklch(85% 0.045 253);
+  color: var(--primary-strong);
 }
 
 /* Sidebar bottom actions — mirrors .sidebar-actions */
@@ -323,7 +327,7 @@ body {
 }
 
 .app-header {
-  padding: 2rem 0rem 1rem;
+  padding: 1.25rem 0 0.9rem;
   max-width: 2000px;
   display: grid;
   gap: 0.7rem;
@@ -332,8 +336,10 @@ body {
 
 .brand h1 {
   margin: 0;
-  font-family: "Outfit", sans-serif;
-  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .brand-row {
@@ -345,11 +351,11 @@ body {
 
 .brand-kicker {
   margin: 0 0 0.35rem;
-  color: var(--primary);
+  color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  font-size: 0.78rem;
 }
 
 .header-copy {
@@ -665,9 +671,9 @@ body {
 .section-block {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 1rem;
+  border-radius: 0.8rem;
   padding: 1rem;
-  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-head {
@@ -705,9 +711,10 @@ body {
 
 .stat-card {
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  padding: 0.75rem;
-  background: #fff;
+  border-radius: 0.65rem;
+  padding: 0.85rem;
+  background: var(--panel-raised);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-card .label {
@@ -726,7 +733,7 @@ body {
   border: 0;
   background: var(--primary);
   color: #fff;
-  border-radius: 0.65rem;
+  border-radius: 0.5rem;
   padding: 0.6rem 1rem;
   font: inherit;
   font-weight: 700;
@@ -754,7 +761,7 @@ body {
 .table-btn {
   border: 1px solid var(--line);
   background: #fff;
-  border-radius: 0.55rem;
+  border-radius: 0.5rem;
   padding: 0.32rem 0.68rem;
   color: var(--text);
   font: inherit;
@@ -1168,6 +1175,11 @@ td:first-child {
 th {
   color: var(--text-muted);
   font-weight: 600;
+  background: oklch(97.2% 0.008 248);
+}
+
+tbody tr:hover {
+  background: oklch(98% 0.01 248);
 }
 
 .pill {
@@ -1227,9 +1239,9 @@ th {
 .analytic-card,
 .team-card {
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  padding: 0.72rem;
-  background: #fff;
+  border-radius: 0.65rem;
+  padding: 0.78rem;
+  background: var(--panel-raised);
 }
 
 .analytic-card h4,

@@ -1,9 +1,12 @@
 :root {
-  --bg: #f2f6fd;
-  --panel: #ffffff;
-  --text: #1f2a35;
-  --muted: #5f6f82;
-  --line: #d7e2ee;
+  --bg: oklch(96.8% 0.008 248);
+  --panel: oklch(99% 0.004 248);
+  --text: oklch(29% 0.025 248);
+  --muted: oklch(49% 0.03 248);
+  --line: oklch(88% 0.018 248);
+  --primary: oklch(46% 0.12 253);
+  --primary-strong: oklch(35% 0.12 253);
+  --primary-soft: oklch(95% 0.025 253);
 }
 
 .entra-layout {
@@ -11,20 +14,21 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   border: 1px solid var(--line);
-  border-radius: 1rem;
+  border-radius: 0.85rem;
   overflow: hidden;
   background: var(--panel);
 }
 
 .entra-panel,
 .entra-hero {
-  padding: 2.1rem;
+  padding: 2rem;
 }
 
 .entra-panel h1 {
   margin: 0;
-  font-family: "Outfit", sans-serif;
-  font-size: 2rem;
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 1.85rem;
+  letter-spacing: 0;
 }
 
 .entra-subtitle {
@@ -33,7 +37,7 @@
 }
 
 .signin-btn {
-  background: #1777d3;
+  background: var(--primary);
 }
 
 .or-divider {
@@ -77,7 +81,7 @@
 .entra-hero {
   position: relative;
   border-left: 1px solid var(--line);
-  background: linear-gradient(155deg, #eaf3ff 0%, #d8e7fa 100%);
+  background: linear-gradient(180deg, oklch(98.5% 0.006 248), oklch(94.5% 0.018 248));
   overflow: hidden;
   min-height: 560px;
   display: grid;
@@ -85,15 +89,7 @@
 }
 
 .hero-orb {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #dff1ff, #bad4ff);
-  top: 36px;
-  right: 70px;
-  opacity: 0.7;
-  animation: drift 8s ease-in-out infinite;
+  display: none;
 }
 
 .hero-orb-2 {
@@ -117,29 +113,27 @@
   position: relative;
   z-index: 2;
   width: min(360px, 92%);
-  background: #fff;
-  border-radius: 28px;
-  padding: 30px 26px 24px;
-  box-shadow: 0 20px 60px rgba(120, 80, 180, 0.16);
-  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 1.25rem;
+  box-shadow: 0 14px 36px rgba(23, 35, 54, 0.1);
+  text-align: left;
 }
 
 .hero-bear-card h2 {
   margin: 0;
-  color: #2d2440;
-  font-size: 1.75rem;
+  color: var(--text);
+  font-size: 1.25rem;
 }
 
 .hero-bear-card p {
-  color: #8f80a5;
+  color: var(--muted);
   margin: 0.55rem 0 0;
 }
 
 .bear {
-  position: relative;
-  width: 190px;
-  height: 170px;
-  margin: 0 auto 18px;
+  display: none;
 }
 
 .ear {
@@ -367,7 +361,7 @@ body {
   margin: 0;
   font-family: "Source Sans 3", sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top right, #dbeaff, transparent 40%), var(--bg);
+  background: linear-gradient(180deg, oklch(98.5% 0.006 248), var(--bg));
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -491,12 +485,17 @@ input::placeholder {
 
 button {
   border: 0;
-  background: #0b63c9;
+  background: var(--primary);
   color: #fff;
   border-radius: 0.65rem;
   padding: 0.65rem 0.8rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.secondary-admin-entry {
+  color: var(--primary-strong);
+  background: var(--primary-soft);
 }
 
 .auth-links {

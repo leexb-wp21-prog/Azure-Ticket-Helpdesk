@@ -131,7 +131,7 @@
           </div>
         </div>
       </div>
-      <p class="header-copy" id="studentSessionLabel"> Signed in as student</p>
+      <p class="header-copy" id="studentSessionLabel">Signed in as student</p>
     </header>
 
     <main id="main-content" class="container main-layout">
@@ -201,7 +201,7 @@
           <p class="helper-title">Quick templates</p>
           <div class="template-row">
             <button class="chip" type="button" data-template="wifi">Wi-Fi issue</button>
-            <button class="chip" type="button" data-template="aircond">Aircond issue</button>
+            <button class="chip" type="button" data-template="aircond">Air conditioning issue</button>
             <button class="chip" type="button" data-template="portal">Portal login issue</button>
           </div>
         </div>
@@ -265,9 +265,9 @@
             </label>
 
             <label class="field">
-              <span>Assign to <strong>*</strong></span>
+              <span>Assigned team <strong>*</strong></span>
               <select id="department" name="department" autocomplete="off" required>
-                <option value="">Select assigne</option>
+                <option value="">Select assigned team</option>
                 <option value="IT Support">IT Support</option>
                 <option value="Facilities">Facilities</option>
                 <option value="Academic Admin">Academic Admin</option>
@@ -294,7 +294,7 @@
             </label>
 
             <label class="field field-wide">
-              <span>Ticket Name <strong>*</strong></span>
+              <span>Subject <strong>*</strong></span>
               <input
                 id="subject"
                 name="subject"
@@ -302,7 +302,7 @@
                 maxlength="120"
                 required
                 autocomplete="off"
-                placeholder="Ticket Name"
+                placeholder="Briefly describe the issue"
               />
               <small class="helper">Keep it short and specific so support can triage quickly.</small>
               <small class="error" id="subjectError"></small>
@@ -339,7 +339,7 @@
                 maxlength="2000"
                 required
                 autocomplete="off"
-                placeholder="Enter your message.."
+                placeholder="Describe what happened, where it happened, and any error messages."
               ></textarea>
               <div class="message-toolbar desktop-only" aria-hidden="true">
                 <button type="button" class="tool-btn" data-format="bold" aria-label="Bold">B</button>
@@ -414,7 +414,7 @@
             <h2 id="trackPanelTitle">My Tickets</h2>
             <button type="button" class="new-ticket-top" id="btnNewTicketTop">+ New Ticket</button>
           </div>
-          <p>Track and manage your support requests.</p>
+          <p>Review status, assigned team, priority, and recent updates for your requests.</p>
         </div>
 
         <div class="track-workspace">
@@ -490,7 +490,7 @@
 
           <aside class="ticket-inline-panel" id="ticketInlinePanel" aria-live="polite">
             <p class="ticket-inline-empty" id="ticketInlineEmpty">
-              Select a ticket from the list to preview ticket here.
+              Select a ticket to review its summary.
             </p>
             <div class="ticket-inline-content hidden" id="ticketInlineContent">
               <div class="ticket-inline-head">
@@ -520,8 +520,7 @@
         <div class="panel-head">
           <div class="panel-head-row">
             <h2 id="knowledgeBasePanelTitle">Knowledge Base</h2>
-            <!-- REMOVE_IN_PRODUCTION: reset feedback utility for QA retesting. -->
-            <button type="button" class="ghost" id="btnResetKbFeedback">Reset Feedback (Testing)</button>
+            <button type="button" class="ghost hidden" id="btnResetKbFeedback" aria-hidden="true">Reset feedback</button>
           </div>
           <p>Browse self-help guides before submitting a support request.</p>
         </div>

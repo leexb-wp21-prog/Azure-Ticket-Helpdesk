@@ -131,13 +131,13 @@
             </div>
           </div>
         </div>
-        <p class="header-copy" id="adminSessionLabel"> Signed in as admin</p>
+        <p class="header-copy" id="adminSessionLabel">Signed in as admin</p>
       </header>
 
       <section id="overview" class="admin-page active" aria-labelledby="overviewTitle">
         <article class="section-block" aria-labelledby="overviewTitle">
           <div class="section-head" id="supportTeamsHead">
-            <h3 id="overviewTitle">Analytics and Report</h3>
+            <h3 id="overviewTitle">Analytics and Report Overview</h3>
             <div class="range-tabs" role="tablist" aria-label="Date range">
               <button type="button" class="range-tab active" data-range="today">Today</button>
               <button type="button" class="range-tab" data-range="week">This Week</button>
@@ -257,10 +257,10 @@
         <article class="section-block">
           <div class="section-head">
             <div>
-              <h3 id="teamsTitle">Team Management</h3>
+              <h3 id="teamsTitle">Support Teams</h3>
               <p class="sub">Manage staff, groups, and permissions.</p>
             </div>
-            <button class="primary-btn" type="button" id="addTeamBtn">+ Add Team</button>
+            <button class="primary-btn" type="button" id="addTeamBtn">Add Team</button>
           </div>
           <div class="support-tabs">
             <button type="button" class="support-tab active" data-support-tab="groups">Groups</button>
@@ -325,7 +325,7 @@
           <div class="support-staff-cards-section" id="supportGroupsPanel">
             <div class="section-head">
               <h3>Team Staff</h3>
-              <button type="button" class="primary-btn" id="addStaffInTeamBtn">+ Add Staff</button>
+              <button type="button" class="primary-btn" id="addStaffInTeamBtn">Add Staff</button>
             </div>
             <div class="staff-card-grid" id="supportStaffCards">
               <article class="team-card">Select a team to view staff.</article>
@@ -401,7 +401,7 @@
         <form id="addTeamForm" class="admin-modal-content">
           <label class="admin-modal-field">
             <span>Team Name</span>
-            <input id="addTeamName" class="table-select" type="text" placeholder="Example: Customer Success" required />
+            <input id="addTeamName" class="table-select" type="text" placeholder="Example: Library Services" required />
             <small class="admin-modal-error" id="addTeamNameError"></small>
           </label>
           <label class="admin-modal-field">
@@ -411,10 +411,11 @@
           </label>
           <label class="admin-modal-field">
             <span>Team Lead Email (Optional)</span>
-            <input id="addTeamLeadEmail" class="table-select" type="email" placeholder="lead@company.com" />
+            <input id="addTeamLeadEmail" class="table-select" type="email" placeholder="lead@campus.edu" />
             <small class="admin-modal-error" id="addTeamLeadEmailError"></small>
           </label>
-          <p class="sub">Backend note: this form saves locally first for preview, then attempts POST <code>/api/admin/support_teams</code> sync.</p>
+          <!-- <p class="sub">Backend note: this form saves locally first for preview, then attempts POST <code>/api/admin/support_teams</code> sync.</p> -->
+          <p class="sub">New teams are available immediately and will sync when the service is online.</p>
           <div class="table-actions">
             <button type="button" class="table-btn" data-close-add-team-modal="true">Cancel</button>
             <button type="submit" class="table-btn update">Create Team</button>
@@ -432,7 +433,8 @@
         </div>
         <form id="addStaffForm" class="admin-modal-content">
           <p id="addStaffTeamHint" class="sub">Create a new support staff profile.</p>
-          <p class="sub">Backend note: staff is added locally first, then synced via POST <code>/api/admin/support_teams/:teamId/staff</code>.</p>
+         <!--      <p class="sub">Backend note: staff is added locally first, then synced via POST <code>/api/admin/support_teams/:teamId/staff</code>.</p> -->
+          <p class="sub">Staff are added to the selected team and included in the active support roster.</p>
           <p id="addStaffFormError" class="admin-form-error hidden" role="alert"></p>
           <label class="admin-modal-field">
             <span>Staff Name</span>
@@ -444,7 +446,7 @@
           </label>
           <label class="admin-modal-field">
             <span>Email</span>
-            <input id="addStaffEmail" class="table-select" type="email" placeholder="staff@company.com" />
+            <input id="addStaffEmail" class="table-select" type="email" placeholder="staff@campus.edu" />
           </label>
           <label class="admin-modal-field">
             <span>Phone (Optional)</span>

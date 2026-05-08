@@ -445,7 +445,7 @@ function renderTickets(items) {
   ticketsResult.innerHTML = "";
   if (!items.length) {
     ticketsResult.innerHTML =
-      '<div class="ticket-card">No tickets found for this email.</div>';
+      '<div class="ticket-card">No tickets are currently linked to this account.</div>';
     return;
   }
 
@@ -476,7 +476,7 @@ function renderTickets(items) {
     )}</span>
         </div>
         <div class="ticket-card-right">
-          <div class="ticket-view">Preview Ticket</div>
+          <div class="ticket-view">Ticket Preview</div>
         </div>
       </div>
 
@@ -700,7 +700,7 @@ function openTicketDetails(ticket) {
       normalizedTicket.description || "No additional description provided.";
   }
 
-  // User requested removing ticket-detail modal from Preview Ticket flow.
+  // Open the full ticket page from the inline summary panel.
   // Desktop: keep inline preview panel. Small screens: go to full detail page.
   const hasInlinePreview = Boolean(ticketInlinePanel);
   const isDesktop = window.matchMedia("(min-width: 981px)").matches;
