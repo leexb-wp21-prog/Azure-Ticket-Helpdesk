@@ -89,7 +89,15 @@
 }
 
 .hero-orb {
-  display: none;
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #dff1ff, #bad4ff);
+  top: 36px;
+  right: 70px;
+  opacity: 0.7;
+  animation: drift 8s ease-in-out infinite;
 }
 
 .hero-orb-2 {
@@ -113,27 +121,29 @@
   position: relative;
   z-index: 2;
   width: min(360px, 92%);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 0.8rem;
-  padding: 1.25rem;
-  box-shadow: 0 14px 36px rgba(23, 35, 54, 0.1);
-  text-align: left;
+  background: #fff;
+  border-radius: 28px;
+  padding: 30px 26px 24px;
+  box-shadow: 0 20px 60px rgba(120, 80, 180, 0.16);
+  text-align: center;
 }
 
 .hero-bear-card h2 {
   margin: 0;
-  color: var(--text);
-  font-size: 1.25rem;
+  color: #2d2440;
+  font-size: 1.75rem;
 }
 
 .hero-bear-card p {
-  color: var(--muted);
+  color: #8f80a5;
   margin: 0.55rem 0 0;
 }
 
 .bear {
-  display: none;
+  position: relative;
+  width: 190px;
+  height: 170px;
+  margin: 0 auto 18px;
 }
 
 .ear {

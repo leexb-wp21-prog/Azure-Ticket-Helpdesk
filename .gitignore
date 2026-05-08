@@ -1,7 +1,11 @@
-﻿.cursor/
-.agents/
-.agent-tools/
-node_modules/
-.env
-.env.*
+# Azure Functions local settings
+local.settings.json
+
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Logs and temp files
 *.log
+*.zip
